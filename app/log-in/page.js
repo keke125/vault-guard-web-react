@@ -1,10 +1,12 @@
 "use client"
 
-import { Stack, Typography, Box, FormControl, FormLabel } from '@mui/material';
-import { TextField, Button } from '@mui/material';
+import { Stack, Typography, Box, FormControl, FormLabel, IconButton } from '@mui/material';
+import { TextField, Button, InputAdornment } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import * as React from 'react';
+import Cookies from 'js-cookie';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -53,6 +55,17 @@ export default function LogIn() {
   const [usernameErrorMessage, setUsernameErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event) => {
+    event.preventDefault();
+  };
 
   const validateInputs = () => {
     const username = document.getElementById('username');
@@ -81,16 +94,44 @@ export default function LogIn() {
     return isValid;
   };
 
+  const submitData = async (username, password) => {
+
+    await fetch('http://localhost:8080/api/v1/auth/log-in', {
+      method: 'POST',
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+      headers: {
+        'Content-type': 'application/json'
+      }
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("登入失敗");
+        }
+      }).then(
+        (response) => {
+          alert("登入成功");
+          Cookies.set('token', response['token'], { secure: true, sameSite: 'Lax' })
+        }
+      ).catch(
+        () => {
+          alert("登入失敗，請檢查帳號密碼是否正確!");
+        }
+      );
+  }
+
   const handleSubmit = (event) => {
     if (usernameError || passwordError) {
       event.preventDefault();
       return;
     }
     const data = new FormData(event.currentTarget);
-    console.log({
-      username: data.get('username'),
-      password: data.get('password'),
-    });
+    submitData(data.get('username'), data.get('password'));
+    event.preventDefault();
   };
 
   return (
@@ -107,6 +148,7 @@ export default function LogIn() {
           component="form"
           onSubmit={handleSubmit}
           noValidate
+          method="post"
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -138,7 +180,7 @@ export default function LogIn() {
               helperText={passwordErrorMessage}
               name="password"
               placeholder="請輸入密碼"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="password"
               autoComplete="current-password"
               autoFocus
@@ -146,6 +188,21 @@ export default function LogIn() {
               fullWidth
               variant="outlined"
               color={passwordError ? 'error' : 'primary'}
+              slotProps={{
+                input: {
+                  endAdornment: <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      onMouseUp={handleMouseUpPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>,
+                },
+              }}
             />
           </FormControl>
           <Button
