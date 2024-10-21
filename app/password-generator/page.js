@@ -4,19 +4,24 @@ import { Stack, Box, Typography, FormControl, FormLabel, TextField, Button, Form
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import * as React from 'react';
 
 export default function PasswordGenerator() {
+
+    const [passwordLength, setPasswordLength] = React.useState(8);
     const [passwordLengthError, setPasswordLengthError] = React.useState(false);
     const [passwordLengthErrorMessage, setPasswordLengthErrorMessage] = React.useState('');
     const [charSetErrorMessage, setCharSetErrorMessage] = React.useState('');
     const [charSetState, setCharSetState] = React.useState({
         isUpperCase: true,
         isLowerCase: true,
+        isNumber: true,
         isSpecialChar: false,
     });
-    const { isUpperCase, isLowerCase, isSpecialChar } = charSetState;
-    const charSetError = [isUpperCase, isLowerCase, isSpecialChar].filter((v) => v).length === 0;
+    const { isUpperCase, isLowerCase, isNumber, isSpecialChar } = charSetState;
+    const charSetError = [isUpperCase, isLowerCase, isNumber, isSpecialChar].filter((v) => v).length === 0;
+    const [password, setPassword] = React.useState('');
 
     const handleCharSetChange = (event) => {
         let result = {
@@ -30,16 +35,17 @@ export default function PasswordGenerator() {
                 countFalse += 1;
             }
         }
-        if (countFalse === 3) {
+        if (countFalse === 4) {
             setCharSetErrorMessage('請選擇至少一種字集!')
         } else {
             setCharSetErrorMessage('')
         }
     };
 
-    const handlePasswordLengthChange = () => {
-        const passwordLength = document.getElementById('passwordLength');
-        if (!passwordLength.value || !((1 <= passwordLength.value) && (passwordLength.value <= 128))) {
+    const handlePasswordLengthChange = (event) => {
+        let passwordLength = parseInt(event.target.value);
+        setPasswordLength(passwordLength);
+        if (!passwordLength || !((1 <= passwordLength) && (passwordLength <= 128))) {
             setPasswordLengthError(true);
             setPasswordLengthErrorMessage('產生的密碼長度必須在1-128之間!');
         } else {
@@ -49,11 +55,9 @@ export default function PasswordGenerator() {
     };
 
     const validateInputs = () => {
-        const passwordLength = document.getElementById('passwordLength');
 
         let isValid = true;
-
-        if (!passwordLength.value || !((1 <= passwordLength.value) && (passwordLength.value <= 128))) {
+        if (!passwordLength || !((1 <= passwordLength) && (passwordLength <= 128))) {
             setPasswordLengthError(true);
             setPasswordLengthErrorMessage('產生的密碼長度必須在1-128之間!');
             isValid = false;
@@ -65,12 +69,51 @@ export default function PasswordGenerator() {
             isValid = false;
         }
 
-        if (isValid) {
-
-        }
         return isValid;
 
     };
+
+    const submitData = (isUpperCase, isLowerCase, isNumber, isSpecialChar, passwordLength) => {
+        let charSet = [];
+        let password = '';
+        if (isUpperCase) {
+            charSet.push.apply(charSet, [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ']);
+        }
+        if (isLowerCase) {
+            charSet.push.apply(charSet, [...'abcdefghijklmnopqrstuvwxyz']);
+        }
+        if (isNumber) {
+            charSet.push.apply(charSet, [...'0123456789']);
+        }
+        if (isSpecialChar) {
+            charSet.push.apply(charSet, [...'!@#$%^*']);
+        }
+        const array = new Uint32Array(passwordLength);
+        self.crypto.getRandomValues(array);
+        for (const num of array) {
+            password += charSet[num % charSet.length];
+        }
+        setPassword(password);
+    };
+
+    const handleSubmit = (event) => {
+        if (passwordLengthError || charSetError) {
+            event.preventDefault();
+            return;
+        }
+        submitData(isUpperCase, isLowerCase, isNumber, isSpecialChar, passwordLength);
+        event.preventDefault();
+    };
+
+    const copy = (copyText) => {
+        React.useEffect(() => {
+            navigator.clipboard.writeText(copyText);
+        });
+    }
+
+    React.useEffect(() => {
+        submitData(isUpperCase, isLowerCase, isNumber, isSpecialChar, passwordLength);
+    }, []);
 
     return (
 
@@ -102,7 +145,7 @@ export default function PasswordGenerator() {
                 <Stack
                     spacing={2}
                     sx={{
-                        alignItems: 'start',
+                        alignItems: 'center',
                         mx: 3,
                         pb: 3,
                         mt: { xs: 3, md: 0 },
@@ -113,16 +156,19 @@ export default function PasswordGenerator() {
                     </Typography>
                     <Box
                         component="form"
-                        /*onSubmit={handleSubmit}*/
+                        onSubmit={handleSubmit}
                         noValidate
                         method="post"
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
-                            width: '25%',
+                            width: '75%',
                             gap: 2,
                         }}
                     >
+                        <Typography variant="p" component="p" style={{ wordWrap: "break-word" }}>
+                            {password}
+                        </Typography>
                         <FormControl>
                             <FormLabel htmlFor="passwordLength">密碼長度</FormLabel>
                             <TextField
@@ -147,6 +193,8 @@ export default function PasswordGenerator() {
                                     onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="大寫字母(A-Z)" />
                                 <FormControlLabel required control={<Checkbox checked={isLowerCase} name="isLowerCase"
                                     onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="小寫字母(a-z)" />
+                                <FormControlLabel required control={<Checkbox checked={isNumber} name="isNumber"
+                                    onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="數字(0-9)" />
                                 <FormControlLabel required control={<Checkbox checked={isSpecialChar} name="isSpecialChar"
                                     onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="特殊字元(!@#$%^*)" />
                             </FormGroup>
@@ -159,6 +207,9 @@ export default function PasswordGenerator() {
                             onClick={validateInputs}
                         >
                             產生密碼
+                        </Button>
+                        <Button type="button" variant="outlined" startIcon={<ContentPasteIcon />} aria-label="copy" onClick={copy(password)}>
+                            複製密碼
                         </Button>
                     </Box>
                 </Stack>
