@@ -10,12 +10,17 @@ import {
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import BadgeIcon from '@mui/icons-material/Badge';
+import PasswordIcon from '@mui/icons-material/Password';
+import KeyIcon from '@mui/icons-material/Key';
+import LinkIcon from '@mui/icons-material/Link';
+import { Visibility, VisibilityOff, AccountCircle } from '@mui/icons-material';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 import * as React from 'react';
 import moment from 'moment';
+import Cookies from 'js-cookie';
 
 function EditToolbar(props) {
 
@@ -37,14 +42,54 @@ function EditToolbar(props) {
 
     const handleAddNewUrl = () => {
         if (urlList.length !== 0) {
-            setUrlList([...urlList, { id: urlList[urlList.length - 1]['id'] + 1 }]);
+            setUrlList([...urlList, { id: urlList[urlList.length - 1]['id'] + 1, value: '' }]);
         } else {
-            setUrlList([...urlList, { id: urlList.length + 1 }]);
+            setUrlList([...urlList, { id: urlList.length + 1, value: '' }]);
         }
     }
 
     const handleRemoveUrl = (id) => {
         setUrlList(urlList.filter((url) => url['id'] !== id));
+    }
+
+    const submitData = async (formJson) => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            return;
+        }
+        await fetch('http://localhost:8080/api/v1/password/password', {
+            method: 'POST',
+            body: JSON.stringify(
+                formJson
+            ),
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`新增失敗，${response["message"]}`) });
+                } else if (response.status === 403) {
+                    throw new Error();
+                }
+            })
+            .then(
+                () => {
+                    alert("新增成功");
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else {
+                        alert(error.message);
+                    }
+                }
+            );
     }
 
     return (
@@ -62,8 +107,8 @@ function EditToolbar(props) {
                         event.preventDefault();
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries(formData.entries());
-                        const email = formJson.email;
-                        console.log(email);
+                        formJson['urlList'] = urlList.map(item => item.value);
+                        submitData(formJson);
                         handleClose();
                     },
                 }}
@@ -79,6 +124,15 @@ function EditToolbar(props) {
                         fullWidth
                         variant="outlined"
                         sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <BadgeIcon />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
                     />
                     <TextField
                         required
@@ -90,6 +144,15 @@ function EditToolbar(props) {
                         autoComplete="username"
                         variant="outlined"
                         sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <AccountCircle />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
                     />
                     <TextField
                         label="密碼"
@@ -110,6 +173,11 @@ function EditToolbar(props) {
                                         {showPassword ? <VisibilityOff /> : <Visibility />}
                                     </IconButton>
                                 </InputAdornment>,
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <PasswordIcon />
+                                    </InputAdornment>
+                                ),
                             },
                         }}
                         sx={{ marginTop: 1, marginBottom: 1 }}
@@ -122,6 +190,15 @@ function EditToolbar(props) {
                         fullWidth
                         variant="outlined"
                         sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <KeyIcon />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
                     />
                     <TextField
                         id="notes"
@@ -130,16 +207,22 @@ function EditToolbar(props) {
                         type="text"
                         fullWidth
                         multiline
+                        rows={3}
                         variant="outlined"
                         sx={{ marginTop: 1, marginBottom: 1 }}
                     />
                     {urlList.map((url) =>
                         <TextField
+                            required
                             label="網址(URL)"
                             type="url"
                             fullWidth
                             variant="outlined"
                             key={url.id}
+                            value={urlList[urlList.map(function (e) { return e.id; }).indexOf(url.id)].value}
+                            onChange={(event) => setUrlList(urlList.map(item =>
+                                item.id === url.id ? { ...item, value: event.target.value } : item
+                            ))}
                             sx={{ marginTop: 1, marginBottom: 1 }}
                             slotProps={{
                                 input: {
@@ -152,6 +235,11 @@ function EditToolbar(props) {
                                             <DeleteOutlineIcon></DeleteOutlineIcon>
                                         </IconButton>
                                     </InputAdornment>,
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <LinkIcon />
+                                        </InputAdornment>
+                                    ),
                                 },
                             }}
                         />
