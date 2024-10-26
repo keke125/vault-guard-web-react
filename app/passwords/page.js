@@ -9,6 +9,7 @@ import {
     DataGrid, GridToolbarContainer
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
@@ -20,9 +21,12 @@ function EditToolbar(props) {
 
     const { addPasswordOpen, setAddPasswordOpen } = props;
     const [showPassword, setShowPassword] = React.useState(false);
+    const [urlList, setUrlList] = React.useState([]);
 
     const handleClose = () => {
         setAddPasswordOpen(false);
+        setUrlList([]);
+        setShowPassword(false);
     };
 
     const handleClick = () => {
@@ -30,6 +34,18 @@ function EditToolbar(props) {
     };
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+    const handleAddNewUrl = () => {
+        if (urlList.length !== 0) {
+            setUrlList([...urlList, { id: urlList[urlList.length - 1]['id'] + 1 }]);
+        } else {
+            setUrlList([...urlList, { id: urlList.length + 1 }]);
+        }
+    }
+
+    const handleRemoveUrl = (id) => {
+        setUrlList(urlList.filter((url) => url['id'] !== id));
+    }
 
     return (
         <React.Fragment>
@@ -117,17 +133,30 @@ function EditToolbar(props) {
                         variant="outlined"
                         sx={{ marginTop: 1, marginBottom: 1 }}
                     />
-                    <TextField
-                        required
-                        id="url"
-                        name="url"
-                        label="網址(URL)"
-                        type="url"
-                        fullWidth
-                        variant="outlined"
-                        sx={{ marginTop: 1, marginBottom: 1 }}
-                    />
-                    <Button sx={{ marginTop: 1, marginBottom: 1 }}>新增網址(URL)</Button>
+                    {urlList.map((url) =>
+                        <TextField
+                            label="網址(URL)"
+                            type="url"
+                            fullWidth
+                            variant="outlined"
+                            key={url.id}
+                            sx={{ marginTop: 1, marginBottom: 1 }}
+                            slotProps={{
+                                input: {
+                                    endAdornment: <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="remove url item"
+                                            onClick={() => handleRemoveUrl(url.id)}
+                                            edge="end"
+                                        >
+                                            <DeleteOutlineIcon></DeleteOutlineIcon>
+                                        </IconButton>
+                                    </InputAdornment>,
+                                },
+                            }}
+                        />
+                    )}
+                    <Button sx={{ marginTop: 1, marginBottom: 1 }} onClick={handleAddNewUrl}>新增網址(URL)</Button>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>取消</Button>
