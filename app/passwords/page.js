@@ -24,7 +24,7 @@ import Cookies from 'js-cookie';
 
 function EditToolbar(props) {
 
-    const { addPasswordOpen, setAddPasswordOpen } = props;
+    const { addPasswordOpen, setAddPasswordOpen, fetcher } = props;
     const [showPassword, setShowPassword] = React.useState(false);
     const [urlList, setUrlList] = React.useState([]);
 
@@ -70,6 +70,7 @@ function EditToolbar(props) {
         })
             .then((response) => {
                 if (response.ok) {
+                    fetcher();
                     return response.json();
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`新增失敗，${response["message"]}`) });
@@ -257,7 +258,7 @@ function EditToolbar(props) {
 
 export default function Passwords() {
 
-    const testDateTime = moment("20241025204225", "YYYYMMDDHHmmSS");
+    const [rows, setRows] = React.useState([])
 
     function getRowId(row) {
         return row.uid;
@@ -271,8 +272,9 @@ export default function Passwords() {
             headerName: '新增時間',
             type: 'dateTime',
             valueGetter: (value) => {
+                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmSS");
                 // Convert the moment object to date object
-                return value.toDate();
+                return lastModifiedDateTime.toDate();
             },
             width: 190,
         },
@@ -281,22 +283,57 @@ export default function Passwords() {
             headerName: '上次更新時間',
             type: 'dateTime',
             valueGetter: (value) => {
+                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmSS");
                 // Convert the moment object to date object
-                return value.toDate();
+                return lastModifiedDateTime.toDate();
             },
             width: 190,
         }
     ];
 
-    const paginationModel = { page: 0, pageSize: 5 };
-
-    const rows = [
-        { name: 'Snow', username: 'Jon', createdDateTime: testDateTime, lastModifiedDateTime: testDateTime, uid: '1d049989-da5e-496f-8360-b0f50098cfb3' },
-        { name: 'Lannister', username: 'Cersei', createdDateTime: testDateTime, lastModifiedDateTime: testDateTime, uid: '1d049989-da5e-496f-8360-b0f50098cfb4' },
-        { name: 'Lannister', username: 'Jaime', createdDateTime: testDateTime, lastModifiedDateTime: testDateTime, uid: '1d049989-da5e-496f-8360-b0f50498cfb3' },
-    ];
+    const paginationModel = { page: 0, pageSize: 10 };
 
     const [addPasswordOpen, setAddPasswordOpen] = React.useState(false);
+
+    const fetcher = async () => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            return;
+        }
+        // fetch data from server
+        await fetch('http://localhost:8080/api/v1/password/passwords', {
+            method: 'GET',
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 403) {
+                    throw new Error();
+                }
+            })
+            .then(
+                (response) => {
+                    setRows(response);
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else {
+                        alert(error.message);
+                    }
+                }
+            );
+    };
+
+    React.useEffect(() => {
+        fetcher();
+    }, []);
 
     return (
 
@@ -337,7 +374,7 @@ export default function Passwords() {
                     <Typography variant="h3" component="h1">
                         我的密碼庫
                     </Typography>
-                    <Paper sx={{ height: 400, width: '100%' }}>
+                    <Paper sx={{ height: '50%', width: '100%' }}>
                         <DataGrid
                             rows={rows}
                             columns={columns}
@@ -350,7 +387,7 @@ export default function Passwords() {
                                 toolbar: EditToolbar,
                             }}
                             slotProps={{
-                                toolbar: { addPasswordOpen, setAddPasswordOpen }
+                                toolbar: { addPasswordOpen, setAddPasswordOpen, fetcher }
                             }
                             }
                         />
