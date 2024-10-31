@@ -3,10 +3,10 @@
 import {
     Stack, Box, Paper, Typography, Button, Dialog, DialogTitle,
     DialogContent, TextField, DialogActions, InputAdornment,
-    IconButton
+    IconButton, DialogContentText
 } from '@mui/material';
 import {
-    DataGrid, GridToolbarContainer
+    DataGrid, GridToolbarContainer, GridActionsCellItem
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -14,6 +14,8 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import PasswordIcon from '@mui/icons-material/Password';
 import KeyIcon from '@mui/icons-material/Key';
 import LinkIcon from '@mui/icons-material/Link';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Visibility, VisibilityOff, AccountCircle } from '@mui/icons-material';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
@@ -258,15 +260,69 @@ function EditToolbar(props) {
 
 export default function Passwords() {
 
-    const [rows, setRows] = React.useState([])
+    const [rows, setRows] = React.useState([]);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+    const [id, setId] = React.useState("");
 
     function getRowId(row) {
         return row.uid;
+    };
+
+    function handleDeleteConfirmClose() {
+        setDeleteConfirmOpen(false);
+    };
+
+    function handleDeleteConfirmOpen(id) {
+        setId(id);
+        setDeleteConfirmOpen(true);
     }
+
+    const handleDeleteClick = async (id) => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            return;
+        }
+        await fetch('http://localhost:8080/api/v1/password/password', {
+            method: 'DELETE',
+            body: JSON.stringify({
+                uid: id
+            }),
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    fetcher();
+                    return response.json();
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`刪除失敗，${response["message"]}`) });
+                } else if (response.status === 403) {
+                    throw new Error();
+                }
+            })
+            .then(
+                () => {
+                    alert("刪除成功");
+                    setDeleteConfirmOpen(false);
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else {
+                        alert(error.message);
+                    }
+                }
+            );
+    };
 
     const columns = [
         { field: 'name', headerName: '名稱', width: 100 },
         { field: 'username', headerName: '帳號', width: 100 },
+        /*
         {
             field: 'createdDateTime',
             headerName: '新增時間',
@@ -288,6 +344,29 @@ export default function Passwords() {
                 return lastModifiedDateTime.toDate();
             },
             width: 190,
+        },
+        */
+        {
+            field: 'actions',
+            type: 'actions',
+            headerName: '編輯及刪除',
+            width: 190,
+            cellClassName: 'actions',
+            getActions: ({ id }) => [
+                <GridActionsCellItem
+                    icon={<EditIcon />}
+                    label="編輯"
+                    className="textPrimary"
+                    /*onClick={handleEditClick(id)}*/
+                    color="inherit"
+                />,
+                <GridActionsCellItem
+                    icon={<DeleteIcon />}
+                    label="刪除"
+                    onClick={() => handleDeleteConfirmOpen(id)}
+                    color="inherit"
+                />
+            ]
         }
     ];
 
@@ -394,6 +473,28 @@ export default function Passwords() {
                     </Paper>
                 </Stack>
             </Box>
+
+            <Dialog
+                open={deleteConfirmOpen}
+                onClose={handleDeleteConfirmClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    是否要刪除密碼?
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        刪除後將無法還原。
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDeleteConfirmClose}>取消</Button>
+                    <Button onClick={() => handleDeleteClick(id)} autoFocus>
+                        確定
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     )
 }
