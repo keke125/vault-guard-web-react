@@ -6,7 +6,7 @@ import {
     IconButton, DialogContentText
 } from '@mui/material';
 import {
-    DataGrid, GridToolbarContainer, GridActionsCellItem
+    DataGrid, GridToolbarContainer, GridActionsCellItem,
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -16,17 +16,22 @@ import KeyIcon from '@mui/icons-material/Key';
 import LinkIcon from '@mui/icons-material/Link';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Visibility, VisibilityOff, AccountCircle } from '@mui/icons-material';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 import * as React from 'react';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import Cookies from 'js-cookie';
+import { DateTimeField, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import 'moment/locale/zh-tw';
 
 function EditToolbar(props) {
 
-    const { addPasswordOpen, setAddPasswordOpen, fetcher } = props;
+    const { addPasswordOpen, setAddPasswordOpen, refreshAllPasswords } = props;
     const [showPassword, setShowPassword] = React.useState(false);
     const [urlList, setUrlList] = React.useState([]);
 
@@ -36,7 +41,7 @@ function EditToolbar(props) {
         setShowPassword(false);
     };
 
-    const handleClick = () => {
+    const handleClickAddPassword = () => {
         setAddPasswordOpen(true);
     };
 
@@ -72,7 +77,7 @@ function EditToolbar(props) {
         })
             .then((response) => {
                 if (response.ok) {
-                    fetcher();
+                    refreshAllPasswords();
                     return response.json();
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`新增失敗，${response["message"]}`) });
@@ -98,7 +103,7 @@ function EditToolbar(props) {
     return (
         <React.Fragment>
             <GridToolbarContainer>
-                <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+                <Button color="primary" startIcon={<AddIcon />} onClick={handleClickAddPassword}>
                     新增密碼
                 </Button>
             </GridToolbarContainer>
@@ -261,120 +266,68 @@ function EditToolbar(props) {
 export default function Passwords() {
 
     const [rows, setRows] = React.useState([]);
+    const [addPasswordOpen, setAddPasswordOpen] = React.useState(false);
+    const [viewPasswordOpen, setViewPasswordOpen] = React.useState(false);
+    const [editPasswordOpen, setEditPasswordOpen] = React.useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
     const [id, setId] = React.useState("");
-
-    function getRowId(row) {
-        return row.uid;
-    };
-
-    function handleDeleteConfirmClose() {
-        setDeleteConfirmOpen(false);
-    };
-
-    function handleDeleteConfirmOpen(id) {
-        setId(id);
-        setDeleteConfirmOpen(true);
-    }
-
-    const handleDeleteClick = async (id) => {
-        const token = Cookies.get('token');
-        if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
-            return;
-        }
-        await fetch('http://localhost:8080/api/v1/password/password', {
-            method: 'DELETE',
-            body: JSON.stringify({
-                uid: id
-            }),
-            headers: {
-                'Content-type': 'application/json',
-                Authorization: `Bearer ${token}`
-            }
-        })
-            .then((response) => {
-                if (response.ok) {
-                    fetcher();
-                    return response.json();
-                } else if (response.status === 400) {
-                    return response.json().then((response) => { throw new Error(`刪除失敗，${response["message"]}`) });
-                } else if (response.status === 403) {
-                    throw new Error();
-                }
-            })
-            .then(
-                () => {
-                    alert("刪除成功");
-                    setDeleteConfirmOpen(false);
-                }
-            ).catch(
-                (error) => {
-                    if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
-                    } else {
-                        alert(error.message);
-                    }
-                }
-            );
-    };
-
-    const columns = [
-        { field: 'name', headerName: '名稱', width: 100 },
-        { field: 'username', headerName: '帳號', width: 100 },
-        /*
-        {
-            field: 'createdDateTime',
-            headerName: '新增時間',
-            type: 'dateTime',
-            valueGetter: (value) => {
-                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmSS");
-                // Convert the moment object to date object
-                return lastModifiedDateTime.toDate();
-            },
-            width: 190,
-        },
-        {
-            field: 'lastModifiedDateTime',
-            headerName: '上次更新時間',
-            type: 'dateTime',
-            valueGetter: (value) => {
-                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmSS");
-                // Convert the moment object to date object
-                return lastModifiedDateTime.toDate();
-            },
-            width: 190,
-        },
-        */
-        {
-            field: 'actions',
-            type: 'actions',
-            headerName: '編輯及刪除',
-            width: 190,
-            cellClassName: 'actions',
-            getActions: ({ id }) => [
-                <GridActionsCellItem
-                    icon={<EditIcon />}
-                    label="編輯"
-                    className="textPrimary"
-                    /*onClick={handleEditClick(id)}*/
-                    color="inherit"
-                />,
-                <GridActionsCellItem
-                    icon={<DeleteIcon />}
-                    label="刪除"
-                    onClick={() => handleDeleteConfirmOpen(id)}
-                    color="inherit"
-                />
-            ]
-        }
-    ];
-
+    const [name, setName] = React.useState("");
+    const [username, setUsername] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [notes, setNotes] = React.useState("");
+    const [totp, setTotp] = React.useState("");
+    const [urlList, setUrlList] = React.useState([]);
+    const [createdDateTime, setCreatedDateTime] = React.useState("");
+    const [lastModifiedDateTime, setLastModifiedDateTime] = React.useState("");
+    const [showPassword, setShowPassword] = React.useState(false);
     const paginationModel = { page: 0, pageSize: 10 };
 
-    const [addPasswordOpen, setAddPasswordOpen] = React.useState(false);
+    const handleModalOpen = async (id, type) => {
+        getPasswordDetails(id);
+        if (type === "view") {
+            setViewPasswordOpen(true);
+        } else if (type === "edit") {
+            setEditPasswordOpen(true);
+        }
+    }
 
-    const fetcher = async () => {
+    const handleModalClose = (type) => {
+        if (type === "view") {
+            setViewPasswordOpen(false);
+        } else if (type === "edit") {
+            setEditPasswordOpen(false);
+        }
+        setShowPassword(false);
+        clearField();
+    };
+
+    const clearField = () => {
+        setId("");
+        setName("");
+        setUsername("");
+        setPassword("");
+        setTotp("");
+        setUrlList([]);
+        setNotes("");
+        setCreatedDateTime("");
+        setLastModifiedDateTime("");
+    }
+
+    const handleAddNewUrl = () => {
+        if (urlList.length !== 0) {
+            setUrlList([...urlList, { id: urlList[urlList.length - 1]['id'] + 1, value: '' }]);
+        } else {
+            setUrlList([...urlList, { id: urlList.length + 1, value: '' }]);
+        }
+    }
+
+    const handleRemoveUrl = (id) => {
+        setUrlList(urlList.filter((url) => url['id'] !== id));
+    }
+
+    const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+    const refreshAllPasswords = async () => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
@@ -410,8 +363,155 @@ export default function Passwords() {
             );
     };
 
+    const getPasswordDetails = async (id) => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            return;
+        }
+        await fetch(`http://localhost:8080/api/v1/password/password/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 400 || response.status === 404) {
+                    throw new Error(`取得失敗，找不到密碼`);
+                } else if (response.status === 403) {
+                    throw new Error();
+                }
+            })
+            .then(
+                (response) => {
+                    setName(response['name']);
+                    setUsername(response['username']);
+                    setPassword(response['password']);
+                    setNotes(response['notes']);
+                    setTotp(response['totp']);
+                    setUrlList(response['urlList']);
+                    setCreatedDateTime(response['createdDateTime']);
+                    setLastModifiedDateTime(response['lastModifiedDateTime']);
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else {
+                        alert(error.message);
+                    }
+                }
+            );
+    };
+
+    function getRowId(row) {
+        return row.uid;
+    };
+
+    function handleDeleteConfirmClose() {
+        setDeleteConfirmOpen(false);
+    };
+
+    function handleDeleteConfirmOpen(id) {
+        setId(id);
+        setDeleteConfirmOpen(true);
+    }
+
+    const handleDeleteClick = async (id) => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            return;
+        }
+        await fetch('http://localhost:8080/api/v1/password/password', {
+            method: 'DELETE',
+            body: JSON.stringify({
+                uid: id
+            }),
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    refreshAllPasswords();
+                    return response.json();
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`刪除失敗，${response["message"]}`) });
+                } else if (response.status === 403) {
+                    throw new Error();
+                }
+            })
+            .then(
+                () => {
+                    alert("刪除成功");
+                    setDeleteConfirmOpen(false);
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else {
+                        alert(error.message);
+                    }
+                }
+            );
+    };
+
+    const handleClickCopy = async (copyText) => {
+        try {
+            // Copy text to clipboard
+            await navigator.clipboard.writeText(copyText);
+        } catch (err) {
+            console.error("Failed to copy text:", err);
+        }
+    };
+
+    const columns = [
+        { field: 'name', headerName: '名稱' },
+        { field: 'username', headerName: '帳號' },
+        {
+            field: 'viewAction',
+            type: 'actions',
+            headerName: '檢視',
+            cellClassName: 'viewAction',
+            getActions: ({ id }) => [
+                <GridActionsCellItem
+                    icon={<Visibility />}
+                    label="檢視"
+                    onClick={() => handleModalOpen(id, "view")}
+                    color="inherit"
+                />,
+            ],
+        },
+        {
+            field: 'editAndRemoveAction',
+            type: 'actions',
+            headerName: '編輯及刪除',
+            cellClassName: 'editAndRemoveAction',
+            getActions: ({ id }) => [
+                <GridActionsCellItem
+                    icon={<EditIcon />}
+                    label="編輯"
+                    onClick={() => handleModalOpen(id, "edit")}
+                    color="inherit"
+                />,
+                <GridActionsCellItem
+                    icon={<DeleteIcon />}
+                    label="刪除"
+                    onClick={() => handleDeleteConfirmOpen(id)}
+                    color="inherit"
+                />
+            ],
+        }
+    ];
+
     React.useEffect(() => {
-        fetcher();
+        refreshAllPasswords();
     }, []);
 
     return (
@@ -466,14 +566,13 @@ export default function Passwords() {
                                 toolbar: EditToolbar,
                             }}
                             slotProps={{
-                                toolbar: { addPasswordOpen, setAddPasswordOpen, fetcher }
+                                toolbar: { addPasswordOpen, setAddPasswordOpen, refreshAllPasswords },
                             }
                             }
                         />
                     </Paper>
                 </Stack>
             </Box>
-
             <Dialog
                 open={deleteConfirmOpen}
                 onClose={handleDeleteConfirmClose}
@@ -494,6 +593,406 @@ export default function Passwords() {
                         確定
                     </Button>
                 </DialogActions>
+            </Dialog>
+            /*
+            <Dialog
+                open={editPasswordOpen}
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        /*
+                        const formData = new FormData(event.currentTarget);
+                        const formJson = Object.fromEntries(formData.entries());
+                        formJson['editUrlList'] = editUrlList.map(item => item.value);
+                        submitData(formJson);
+                        */
+                        handleClose();
+                    },
+                }}
+            >
+                <DialogTitle>編輯密碼</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        required
+                        id="name"
+                        name="name"
+                        value={name}
+                        label="名稱"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <BadgeIcon />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                    />
+                    <TextField
+                        required
+                        id="username"
+                        name="username"
+                        value={username}
+                        label="帳號"
+                        type="text"
+                        fullWidth
+                        autoComplete="username"
+                        variant="outlined"
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <AccountCircle />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                    />
+                    <TextField
+                        label="密碼"
+                        name="password"
+                        value={password}
+                        type={showPassword ? 'text' : 'password'}
+                        id="password"
+                        autoComplete="new-password"
+                        fullWidth
+                        variant="outlined"
+                        slotProps={{
+                            input: {
+                                endAdornment: <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle password visibility"
+                                        onClick={handleClickShowPassword}
+                                        edge="end"
+                                    >
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>,
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <PasswordIcon />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                    />
+                    <TextField
+                        id="totp"
+                        name="totp"
+                        value={totp}
+                        label="TOTP驗證碼"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <KeyIcon />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                    />
+                    <TextField
+                        id="notes"
+                        name="notes"
+                        value={notes}
+                        label="備註"
+                        type="text"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        variant="outlined"
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                    />
+                    {urlList.map((url, index) =>
+                        <TextField
+                            required
+                            label="網址(URL)"
+                            type="url"
+                            fullWidth
+                            variant="outlined"
+                            key={index}
+                            value={url}
+                            /*
+                            onChange={(event) => setEditUrlList(urlList.map(item, index =>
+                                item === index ? { ...item, value: event.target.value } : item
+                            ))}
+                            */
+                            sx={{ marginTop: 1, marginBottom: 1 }}
+                            slotProps={{
+                                input: {
+                                    endAdornment: <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="remove url item"
+                                            onClick={() => handleRemoveUrl(url.id)}
+                                            edge="end"
+                                        >
+                                            <DeleteOutlineIcon></DeleteOutlineIcon>
+                                        </IconButton>
+                                    </InputAdornment>,
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <LinkIcon />
+                                        </InputAdornment>
+                                    ),
+                                },
+                            }}
+                        />
+                    )}
+                    <Button sx={{ marginTop: 1, marginBottom: 1 }} onClick={handleAddNewUrl}>新增網址(URL)</Button>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => handleModalClose("edit")}>取消</Button>
+                    <Button type="submit">更新</Button>
+                </DialogActions>
+            </Dialog>
+            */
+            <Dialog
+                open={viewPasswordOpen}
+            >
+                <DialogTitle>檢視密碼</DialogTitle>
+                <IconButton
+                    aria-label="close"
+                    onClick={() => handleModalClose("view")}
+                    sx={(theme) => ({
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: theme.palette.grey[500],
+                    })}
+                >
+                    <CloseIcon />
+                </IconButton>
+                <DialogContent>
+                    <TextField
+                        id="name"
+                        name="name"
+                        value={name}
+                        label="名稱"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <BadgeIcon />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="copy name"
+                                        onClick={() => handleClickCopy(name)}
+                                        edge="end"
+                                    >
+                                        <ContentCopyIcon />
+                                    </IconButton>
+                                </InputAdornment>,
+                                readOnly: true
+                            },
+                        }}
+                    />
+                    <TextField
+                        id="username"
+                        name="username"
+                        value={username}
+                        label="帳號"
+                        type="text"
+                        fullWidth
+                        autoComplete="username"
+                        variant="outlined"
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <AccountCircle />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="copy username"
+                                        onClick={() => handleClickCopy(username)}
+                                        edge="end"
+                                    >
+                                        <ContentCopyIcon />
+                                    </IconButton>
+                                </InputAdornment>,
+                                readOnly: true
+                            },
+                        }}
+                    />
+                    <TextField
+                        label="密碼"
+                        name="password"
+                        value={password}
+                        type={showPassword ? 'text' : 'password'}
+                        id="password"
+                        fullWidth
+                        variant="outlined"
+                        slotProps={{
+                            input: {
+                                endAdornment: <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle password visibility"
+                                        onClick={handleClickShowPassword}
+                                        edge="end"
+                                        sx={{ marginRight: 0.5 }}
+                                    >
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                    <IconButton
+                                        aria-label="copy password"
+                                        onClick={() => handleClickCopy(password)}
+                                        edge="end"
+                                    >
+                                        <ContentCopyIcon />
+                                    </IconButton>
+                                </InputAdornment>,
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <PasswordIcon />
+                                    </InputAdornment>
+                                ),
+                                readOnly: true
+                            },
+                        }}
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                    />
+                    <TextField
+                        id="totp"
+                        name="totp"
+                        value={totp}
+                        label="TOTP驗證碼"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <KeyIcon />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="copy totp"
+                                        onClick={() => handleClickCopy(totp)}
+                                        edge="end"
+                                    >
+                                        <ContentCopyIcon />
+                                    </IconButton>
+                                </InputAdornment>,
+                                readOnly: true
+                            },
+                        }}
+                    />
+                    <TextField
+                        id="notes"
+                        name="notes"
+                        value={notes}
+                        label="備註"
+                        type="text"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        variant="outlined"
+                        sx={{ marginTop: 1, marginBottom: 1 }}
+                        slotProps={{
+                            input: {
+                                endAdornment: <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="copy notes"
+                                        onClick={() => handleClickCopy(notes)}
+                                        edge="end"
+                                    >
+                                        <ContentCopyIcon />
+                                    </IconButton>
+                                </InputAdornment>,
+                                readOnly: true
+                            }
+                        }
+                        }
+                    />
+                    <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale="zh-tw" dateLibInstance={moment}>
+                        <DateTimeField
+                            id="createdDateTime"
+                            name="createdDateTime"
+                            value={moment.tz(createdDateTime, "YYYYMMDDHHmmSS", "Asia/Taipei").tz(moment.tz.guess())}
+                            label="新增時間"
+                            fullWidth
+                            variant="outlined"
+                            sx={{ marginTop: 1, marginBottom: 1 }}
+                            readOnly
+                        />
+                        <DateTimeField
+                            id="lastModifiedDateTime"
+                            name="lastModifiedDateTime"
+                            value={moment.tz(lastModifiedDateTime, "YYYYMMDDHHmmSS", "Asia/Taipei").tz(moment.tz.guess())}
+                            label="上次更新時間"
+                            fullWidth
+                            variant="outlined"
+                            sx={{ marginTop: 1, marginBottom: 1 }}
+                            readOnly
+                            slotProps={{
+                                input: {
+                                    endAdornment: <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="copy notes"
+                                            onClick={() => handleClickCopy(notes)}
+                                            edge="end"
+                                        >
+                                            <ContentCopyIcon />
+                                        </IconButton>
+                                    </InputAdornment>,
+                                }
+                            }}
+                        />
+                    </LocalizationProvider>
+                    {urlList.map((url, index) =>
+                        <TextField
+                            required
+                            label="網址(URL)"
+                            type="url"
+                            fullWidth
+                            variant="outlined"
+                            key={index}
+                            value={url}
+                            sx={{ marginTop: 1, marginBottom: 1 }}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <LinkIcon />
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="copy url"
+                                            onClick={() => handleClickCopy(url)}
+                                            edge="end"
+                                        >
+                                            <ContentCopyIcon />
+                                        </IconButton>
+                                    </InputAdornment>,
+                                    readOnly: true
+                                },
+                            }}
+                        />
+                    )}
+                </DialogContent>
             </Dialog>
         </Box>
     )
