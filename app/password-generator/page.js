@@ -4,7 +4,7 @@ import { Stack, Box, Typography, FormControl, FormLabel, TextField, Button, Form
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import * as React from 'react';
 
 export default function PasswordGenerator() {
@@ -105,11 +105,14 @@ export default function PasswordGenerator() {
         event.preventDefault();
     };
 
-    const copy = (copyText) => {
-        React.useEffect(() => {
-            navigator.clipboard.writeText(copyText);
-        });
-    }
+    const copy = async (copyText) => {
+        try {
+            // Copy text to clipboard
+            await navigator.clipboard.writeText(copyText);
+        } catch (err) {
+            console.error("Failed to copy text:", err);
+        }
+    };
 
     React.useEffect(() => {
         submitData(isUpperCase, isLowerCase, isNumber, isSpecialChar, passwordLength);
@@ -208,7 +211,7 @@ export default function PasswordGenerator() {
                         >
                             產生密碼
                         </Button>
-                        <Button type="button" variant="outlined" startIcon={<ContentPasteIcon />} aria-label="copy" onClick={copy(password)}>
+                        <Button type="button" variant="outlined" startIcon={<ContentCopyIcon />} aria-label="copy" onClick={() => copy(password)}>
                             複製密碼
                         </Button>
                     </Box>
