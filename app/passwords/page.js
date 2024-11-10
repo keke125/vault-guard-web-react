@@ -3,7 +3,7 @@
 import {
     Stack, Box, Paper, Typography, Button, Dialog, DialogTitle,
     DialogContent, TextField, DialogActions, InputAdornment,
-    IconButton, DialogContentText
+    IconButton, DialogContentText, CircularProgress
 } from '@mui/material';
 import {
     DataGrid, GridToolbarContainer, GridActionsCellItem,
@@ -28,6 +28,7 @@ import Cookies from 'js-cookie';
 import { DateTimeField, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import 'moment/locale/zh-tw';
+import { TOTP } from "totp-generator";
 
 function EditToolbar(props) {
 
@@ -263,6 +264,34 @@ function EditToolbar(props) {
     );
 }
 
+function CircularProgressWithLabel(props) {
+    return (
+        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+            <CircularProgress variant="determinate" {...props} />
+            <Box
+                sx={{
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    right: 0,
+                    position: 'absolute',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <Typography
+                    variant="caption"
+                    component="div"
+                    sx={{ color: 'text.secondary' }}
+                >
+                    {`${Math.ceil(props.value * 30 / 100)}`}
+                </Typography>
+            </Box>
+        </Box>
+    );
+}
+
 export default function Passwords() {
 
     const [rows, setRows] = React.useState([]);
@@ -276,11 +305,14 @@ export default function Passwords() {
     const [password, setPassword] = React.useState("");
     const [notes, setNotes] = React.useState("");
     const [totp, setTotp] = React.useState("");
+    const [totpValue, setTotpValue] = React.useState("");
+    const [intervalId, setIntervalId] = React.useState(0);
     const [urlList, setUrlList] = React.useState([]);
     const [createdDateTime, setCreatedDateTime] = React.useState("");
     const [lastModifiedDateTime, setLastModifiedDateTime] = React.useState("");
     const [showPassword, setShowPassword] = React.useState(false);
     const paginationModel = { page: 0, pageSize: 10 };
+    const [progress, setProgress] = React.useState(10);
 
     const handleModalOpen = async (id, type) => {
         getPasswordDetails(id);
@@ -294,6 +326,7 @@ export default function Passwords() {
     const handleModalClose = (type) => {
         if (type === "view") {
             setViewPasswordOpen(false);
+            clearInterval(intervalId);
         } else if (type === "edit") {
             setEditPasswordOpen(false);
         }
@@ -307,6 +340,7 @@ export default function Passwords() {
         setUsername("");
         setPassword("");
         setTotp("");
+        setTotpValue("");
         setUrlList([]);
         setNotes("");
         setCreatedDateTime("");
@@ -363,6 +397,21 @@ export default function Passwords() {
             );
     };
 
+    async function timer(totp) {
+        const intervalId = setInterval(async function () {
+            try {
+                const time = 30 - Date.now() / 1000 % 30;
+                const progress = time * 100 / 30;
+                setProgress(progress);
+                const { otp } = await TOTP.generate(totp);
+                setTotpValue(otp);
+            } catch (e) {
+                setTotpValue("驗證碼格式錯誤!");
+            }
+        }, 1000);
+        setIntervalId(intervalId);
+    }
+
     const getPasswordDetails = async (id) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
@@ -392,9 +441,13 @@ export default function Passwords() {
                     setPassword(response['password']);
                     setNotes(response['notes']);
                     setTotp(response['totp']);
+                    setTotpValue("");
                     setUrlList(response['urlList']);
                     setCreatedDateTime(response['createdDateTime']);
                     setLastModifiedDateTime(response['lastModifiedDateTime']);
+                    if (response['totp'] !== "") {
+                        timer(response['totp']);
+                    }
                 }
             ).catch(
                 (error) => {
@@ -870,15 +923,15 @@ export default function Passwords() {
                         }}
                         sx={{ marginTop: 1, marginBottom: 1 }}
                     />
-                    <TextField
+                    {totp && <TextField
                         id="totp"
                         name="totp"
-                        value={totp}
+                        value={totpValue}
                         label="TOTP驗證碼"
                         type="text"
                         fullWidth
                         variant="outlined"
-                        sx={{ marginTop: 1, marginBottom: 1 }}
+                        sx={{ marginTop: 1, marginBottom: 1}}
                         slotProps={{
                             input: {
                                 startAdornment: (
@@ -887,9 +940,10 @@ export default function Passwords() {
                                     </InputAdornment>
                                 ),
                                 endAdornment: <InputAdornment position="end">
+                                    <CircularProgressWithLabel value={progress} />
                                     <IconButton
                                         aria-label="copy totp"
-                                        onClick={() => handleClickCopy(totp)}
+                                        onClick={() => handleClickCopy(totpValue)}
                                         edge="end"
                                     >
                                         <ContentCopyIcon />
@@ -898,7 +952,7 @@ export default function Passwords() {
                                 readOnly: true
                             },
                         }}
-                    />
+                    />}
                     <TextField
                         id="notes"
                         name="notes"
