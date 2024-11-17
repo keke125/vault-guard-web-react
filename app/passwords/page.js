@@ -316,6 +316,7 @@ export default function Passwords() {
 
     const handleModalOpen = async (id, type) => {
         getPasswordDetails(id);
+        setId(id);
         if (type === "view") {
             setViewPasswordOpen(true);
         } else if (type === "edit") {
@@ -326,7 +327,6 @@ export default function Passwords() {
     const handleModalClose = (type) => {
         if (type === "view") {
             setViewPasswordOpen(false);
-            clearInterval(intervalId);
         } else if (type === "edit") {
             setEditPasswordOpen(false);
         }
@@ -442,10 +442,17 @@ export default function Passwords() {
                     setNotes(response['notes']);
                     setTotp(response['totp']);
                     setTotpValue("");
-                    setUrlList(response['urlList']);
+                    if (response['urlList'].length != 0) {
+                        setUrlList(response['urlList'].map((url, index) => { return { id: index, value: url } }));
+                    } else {
+                        setUrlList([]);
+                    }
                     setCreatedDateTime(response['createdDateTime']);
                     setLastModifiedDateTime(response['lastModifiedDateTime']);
                     if (response['totp'] !== "") {
+                        if (intervalId != 0) {
+                            clearInterval(intervalId);
+                        }
                         timer(response['totp']);
                     }
                 }
@@ -523,6 +530,47 @@ export default function Passwords() {
             console.error("Failed to copy text:", err);
         }
     };
+
+    const submitData = async (formJson) => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            return;
+        }
+        await fetch('http://localhost:8080/api/v1/password/password', {
+            method: 'PATCH',
+            body: JSON.stringify(
+                formJson
+            ),
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    refreshAllPasswords();
+                    return response.json();
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`更新失敗，${response["message"]}`) });
+                } else if (response.status === 403) {
+                    throw new Error();
+                }
+            })
+            .then(
+                () => {
+                    alert("更新成功");
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else {
+                        alert(error.message);
+                    }
+                }
+            );
+    }
 
     const columns = [
         { field: 'name', headerName: '名稱' },
@@ -647,20 +695,18 @@ export default function Passwords() {
                     </Button>
                 </DialogActions>
             </Dialog>
-            /*
             <Dialog
                 open={editPasswordOpen}
                 PaperProps={{
                     component: 'form',
                     onSubmit: (event) => {
                         event.preventDefault();
-                        /*
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries(formData.entries());
-                        formJson['editUrlList'] = editUrlList.map(item => item.value);
+                        formJson['urlList'] = urlList.map(item => item.value);
+                        formJson['uid'] = id;
                         submitData(formJson);
-                        */
-                        handleClose();
+                        handleModalClose("edit");
                     },
                 }}
             >
@@ -671,6 +717,9 @@ export default function Passwords() {
                         id="name"
                         name="name"
                         value={name}
+                        onChange={(event) => {
+                            setName(event.target.value);
+                        }}
                         label="名稱"
                         type="text"
                         fullWidth
@@ -691,6 +740,9 @@ export default function Passwords() {
                         id="username"
                         name="username"
                         value={username}
+                        onChange={(event) => {
+                            setUsername(event.target.value);
+                        }}
                         label="帳號"
                         type="text"
                         fullWidth
@@ -711,6 +763,9 @@ export default function Passwords() {
                         label="密碼"
                         name="password"
                         value={password}
+                        onChange={(event) => {
+                            setPassword(event.target.value);
+                        }}
                         type={showPassword ? 'text' : 'password'}
                         id="password"
                         autoComplete="new-password"
@@ -740,6 +795,9 @@ export default function Passwords() {
                         id="totp"
                         name="totp"
                         value={totp}
+                        onChange={(event) => {
+                            setTotp(event.target.value);
+                        }}
                         label="TOTP驗證碼"
                         type="text"
                         fullWidth
@@ -759,6 +817,9 @@ export default function Passwords() {
                         id="notes"
                         name="notes"
                         value={notes}
+                        onChange={(event) => {
+                            setNotes(event.target.value);
+                        }}
                         label="備註"
                         type="text"
                         fullWidth
@@ -767,20 +828,18 @@ export default function Passwords() {
                         variant="outlined"
                         sx={{ marginTop: 1, marginBottom: 1 }}
                     />
-                    {urlList.map((url, index) =>
+                    {urlList.map((url) =>
                         <TextField
                             required
                             label="網址(URL)"
                             type="url"
                             fullWidth
                             variant="outlined"
-                            key={index}
-                            value={url}
-                            /*
-                            onChange={(event) => setEditUrlList(urlList.map(item, index =>
-                                item === index ? { ...item, value: event.target.value } : item
+                            key={url.id}
+                            value={urlList[urlList.map(function (e) { return e.id; }).indexOf(url.id)].value}
+                            onChange={(event) => setUrlList(urlList.map(item =>
+                                item.id === url.id ? { ...item, value: event.target.value } : item
                             ))}
-                            */
                             sx={{ marginTop: 1, marginBottom: 1 }}
                             slotProps={{
                                 input: {
@@ -809,7 +868,6 @@ export default function Passwords() {
                     <Button type="submit">更新</Button>
                 </DialogActions>
             </Dialog>
-            */
             <Dialog
                 open={viewPasswordOpen}
             >
@@ -931,7 +989,7 @@ export default function Passwords() {
                         type="text"
                         fullWidth
                         variant="outlined"
-                        sx={{ marginTop: 1, marginBottom: 1}}
+                        sx={{ marginTop: 1, marginBottom: 1 }}
                         slotProps={{
                             input: {
                                 startAdornment: (
@@ -1015,15 +1073,15 @@ export default function Passwords() {
                             }}
                         />
                     </LocalizationProvider>
-                    {urlList.map((url, index) =>
+                    {urlList.map((url) =>
                         <TextField
                             required
                             label="網址(URL)"
                             type="url"
                             fullWidth
                             variant="outlined"
-                            key={index}
-                            value={url}
+                            key={url.id}
+                            value={url.value}
                             sx={{ marginTop: 1, marginBottom: 1 }}
                             slotProps={{
                                 input: {
