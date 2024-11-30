@@ -36,8 +36,17 @@ export default function Vault() {
     const [uploadFile, setUploadFile] = React.useState(null);
 
     const exportVaultFormRef = React.createRef();
+    const clearVaultFormRef = React.createRef();
 
     const handleClickShowMainPassword = () => setShowMainPassword((show) => !show);
+
+    const handleSelectedTabChange = (newValue) => {
+        setSelectedTab(newValue);
+        setUploadFileLabel("尚未上傳檔案");
+        setUploadFile(null);
+        setMainPassword("");
+        setShowMainPassword(false);
+    };
 
     const handleUploadFileChange = (event) => {
         if (event.target.files.length === 1) {
@@ -178,6 +187,60 @@ export default function Vault() {
             );
     };
 
+    const handleClickClearVault = async (event) => {
+        event.preventDefault();
+        clearVault();
+    }
+
+    const clearVault = async () => {
+        if (!clearVaultFormRef.current.reportValidity()) {
+            return;
+        }
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            return;
+        }
+        const url = new URL('http://localhost:8080/api/v1/password/passwords');
+        await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "mainPassword": mainPassword
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 400) {
+                    throw new Error(`清空失敗!`);
+                } else if (response.status === 403) {
+                    return response.json().then((response) => {
+                        if (response["message"]) {
+                            throw new Error(`清空失敗，${response["message"]}`);
+                        } else {
+                            throw new Error();
+                        }
+                    })
+                }
+            })
+            .then(
+                (response) => {
+                    alert(response["message"]);
+                    setMainPassword("");
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    }
+                    else if (error.message) {
+                        alert(error.message);
+                    }
+                }
+            );
+    };
+
     return (
 
         <Box sx={{ display: 'flex' }}>
@@ -220,7 +283,7 @@ export default function Vault() {
                     <Box sx={{ width: '100%', typography: 'body1' }}>
                         <TabContext value={selectedTab}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                <TabList onChange={(_, newValue) => setSelectedTab(newValue)} aria-label="lab API tabs example">
+                                <TabList onChange={(_, newValue) => handleSelectedTabChange(newValue)} aria-label="vault setting tabs">
                                     <Tab label="匯入密碼" value="1" />
                                     <Tab label="匯出密碼庫" value="2" />
                                     <Tab label="清空密碼庫" value="3" />
@@ -318,7 +381,51 @@ export default function Vault() {
                                     </Button>
                                 </form>
                             </TabPanel>
-                            <TabPanel value="3">Item Three</TabPanel>
+                            <TabPanel value="3">
+                                <form ref={clearVaultFormRef}>
+                                    <TextField
+                                        label="主密碼"
+                                        name="main-password"
+                                        type={showMainPassword ? 'text' : 'password'}
+                                        id="main-password"
+                                        value={mainPassword}
+                                        onChange={(event) => {
+                                            setMainPassword(event.target.value);
+                                        }}
+                                        autoComplete="current-password"
+                                        fullWidth
+                                        variant="outlined"
+                                        sx={{ marginTop: 1, marginBottom: 2 }}
+                                        required
+                                        slotProps={{
+                                            input: {
+                                                endAdornment: <InputAdornment position="end">
+                                                    <IconButton
+                                                        aria-label="toggle password visibility"
+                                                        onClick={handleClickShowMainPassword}
+                                                        edge="end"
+                                                    >
+                                                        {showMainPassword ? <VisibilityOff /> : <Visibility />}
+                                                    </IconButton>
+                                                </InputAdornment>,
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <PasswordIcon />
+                                                    </InputAdornment>
+                                                ),
+                                            },
+                                        }}
+                                    />
+                                    <Button
+                                        type="submit"
+                                        fullWidth
+                                        variant="contained"
+                                        onClick={handleClickClearVault}
+                                    >
+                                        清空密碼庫
+                                    </Button>
+                                </form>
+                            </TabPanel>
                         </TabContext>
                     </Box>
                 </Stack>
