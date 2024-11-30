@@ -153,6 +153,8 @@ export default function Vault() {
             body: formData
         })
             .then((response) => {
+                setUploadFileLabel("尚未上傳檔案");
+                setUploadFile(null);
                 if (response.ok) {
                     return response.json();
                 } else if (response.status === 400) {
