@@ -1,25 +1,64 @@
 "use client";
 
-import { Stack, Box, Tab, Typography, TextField, InputAdornment, IconButton, Button } from '@mui/material';
+import { Stack, Box, Tab, Typography, TextField, InputAdornment, IconButton, Button, InputLabel, Select, MenuItem, FormControl } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import PasswordIcon from '@mui/icons-material/Password';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
+import { styled } from '@mui/material/styles';
 import * as React from 'react';
 import Cookies from 'js-cookie';
 import moment from 'moment-timezone';
+
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
 
 export default function Vault() {
 
     const [selectedTab, setSelectedTab] = React.useState("1");
     const [showMainPassword, setShowMainPassword] = React.useState(false);
     const [mainPassword, setMainPassword] = React.useState("");
+    const [importType, setImportType] = React.useState("GPM");
+    const [acceptFileType, setAcceptFileType] = React.useState("text/csv,text/comma-separated-values,.csv");
+    const [uploadFileLabel, setUploadFileLabel] = React.useState("尚未上傳檔案");
+    const [uploadFile, setUploadFile] = React.useState(null);
 
-    const formRef = React.createRef();
+    const exportVaultFormRef = React.createRef();
 
     const handleClickShowMainPassword = () => setShowMainPassword((show) => !show);
+
+    const handleUploadFileChange = (event) => {
+        if (event.target.files.length === 1) {
+            setUploadFileLabel("已上傳檔案");
+            setUploadFile(event.target.files[0]);
+        } else {
+            setUploadFileLabel("尚未上傳檔案");
+            setUploadFile(null);
+        }
+    };
+
+    const handleImportTypeChange = (event) => {
+        setImportType(event.target.value);
+        setUploadFileLabel("尚未上傳檔案");
+        setUploadFile(null);
+        if (event.target.value === "GPM") {
+            setAcceptFileType(".csv");
+        } else if (event.target.value === "VG") {
+            setAcceptFileType("application/json");
+        }
+    }
 
     const handleClickExportVault = async (event) => {
         event.preventDefault();
@@ -27,7 +66,7 @@ export default function Vault() {
     }
 
     const getExportedVault = async () => {
-        if (!formRef.current.reportValidity()) {
+        if (!exportVaultFormRef.current.reportValidity()) {
             return;
         }
         const token = Cookies.get('token');
@@ -72,6 +111,7 @@ export default function Vault() {
                     link.click();
                     link.remove();
                     window.URL.revokeObjectURL(url);
+                    setMainPassword("");
                 }
             ).catch(
                 (error) => {
@@ -79,6 +119,57 @@ export default function Vault() {
                         alert("身分驗證失敗，請重新登入!");
                     }
                     else if (error.message) {
+                        alert(error.message);
+                    }
+                }
+            );
+    };
+
+    const handleClickImportVault = async (event) => {
+        event.preventDefault();
+        importVault();
+    }
+
+    const importVault = async () => {
+        if (uploadFile === null) {
+            alert("請上傳檔案!");
+            return;
+        }
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            return;
+        }
+        const url = new URL('http://localhost:8080/api/v1/password/passwords');
+        const params = new URLSearchParams({ type: importType });
+        url.search = params;
+        let formData = new FormData();
+        formData.append("file", uploadFile)
+        await fetch(url, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: formData
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 400) {
+                    throw new Error(`匯入失敗!`);
+                } else if (response.status === 403) {
+                    throw new Error();
+                }
+            })
+            .then(
+                (response) => {
+                    alert(`匯入成功: ${response["successCnt"]}個\n匯入失敗: ${response["failedCnt"]}個`);
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else {
                         alert(error.message);
                     }
                 }
@@ -128,15 +219,60 @@ export default function Vault() {
                         <TabContext value={selectedTab}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList onChange={(_, newValue) => setSelectedTab(newValue)} aria-label="lab API tabs example">
-                                    <Tab label="匯入密碼庫" value="1" />
+                                    <Tab label="匯入密碼" value="1" />
                                     <Tab label="匯出密碼庫" value="2" />
                                     <Tab label="清空密碼庫" value="3" />
                                 </TabList>
                             </Box>
                             <TabPanel value="1">
+                                <form>
+                                    <FormControl fullWidth>
+                                        <InputLabel id="import-type-label">匯入類型</InputLabel>
+                                        <Select
+                                            labelId="import-type-label"
+                                            id="import-type-select"
+                                            value={importType}
+                                            label="importType"
+                                            onChange={handleImportTypeChange}
+                                            sx={{ marginTop: 1, marginBottom: 2 }}
+                                        >
+                                            <MenuItem value={"GPM"}>Google 密碼管理工具</MenuItem>
+                                            <MenuItem value={"VG"}>Vault Guard</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                    <Button
+                                        component="label"
+                                        role={undefined}
+                                        variant="contained"
+                                        tabIndex={-1}
+                                        startIcon={<CloudUploadIcon />}
+                                        sx={{ marginTop: 1, marginBottom: 2 }}
+                                    >
+                                        上傳檔案
+                                        <VisuallyHiddenInput
+                                            type="file"
+                                            accept={acceptFileType}
+                                            onChange={(event) => handleUploadFileChange(event)}
+                                        />
+                                    </Button>
+                                    <InputLabel
+                                        id="upload-file-label"
+                                        sx={{ marginTop: 1, marginBottom: 2 }}
+                                    >
+                                        {uploadFileLabel}
+                                    </InputLabel>
+                                    <Button
+                                        type="submit"
+                                        fullWidth
+                                        variant="contained"
+                                        onClick={handleClickImportVault}
+                                    >
+                                        匯入密碼
+                                    </Button>
+                                </form>
                             </TabPanel>
-                            <form ref={formRef}>
-                                <TabPanel value="2">
+                            <TabPanel value="2">
+                                <form ref={exportVaultFormRef}>
                                     <TextField
                                         label="主密碼"
                                         name="main-password"
@@ -178,8 +314,8 @@ export default function Vault() {
                                     >
                                         匯出密碼庫
                                     </Button>
-                                </TabPanel>
-                            </form>
+                                </form>
+                            </TabPanel>
                             <TabPanel value="3">Item Three</TabPanel>
                         </TabContext>
                     </Box>
