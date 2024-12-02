@@ -12,6 +12,7 @@ import { styled } from '@mui/material/styles';
 import * as React from 'react';
 import Cookies from 'js-cookie';
 import moment from 'moment-timezone';
+import { redirect } from 'next/navigation';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -81,7 +82,7 @@ export default function Vault() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            return;
+            redirect("/log-in");
         }
         const url = new URL('http://localhost:8080/api/v1/password/passwords');
         const params = new URLSearchParams({ type: "file" });
@@ -126,6 +127,7 @@ export default function Vault() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
                     }
                     else if (error.message) {
                         alert(error.message);
@@ -147,7 +149,7 @@ export default function Vault() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            return;
+            redirect("/log-in");
         }
         const url = new URL('http://localhost:8080/api/v1/password/passwords');
         const params = new URLSearchParams({ type: importType });
@@ -180,6 +182,7 @@ export default function Vault() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
                     } else {
                         alert(error.message);
                     }
@@ -199,7 +202,7 @@ export default function Vault() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            return;
+            redirect("/log-in");
         }
         const url = new URL('http://localhost:8080/api/v1/password/passwords');
         await fetch(url, {
@@ -233,6 +236,7 @@ export default function Vault() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
                     }
                     else if (error.message) {
                         alert(error.message);

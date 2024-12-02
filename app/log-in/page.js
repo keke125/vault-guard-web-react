@@ -7,6 +7,7 @@ import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import * as React from 'react';
 import Cookies from 'js-cookie';
+import { redirect } from 'next/navigation';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -88,7 +89,7 @@ export default function LogIn() {
   };
 
   const submitData = async (username, password) => {
-
+    let loginStatus = false;
     await fetch('http://localhost:8080/api/v1/auth/log-in', {
       method: 'POST',
       body: JSON.stringify({
@@ -107,6 +108,7 @@ export default function LogIn() {
         }
       }).then(
         (response) => {
+          loginStatus = true;
           alert("登入成功");
           Cookies.set('token', response['token'], { secure: true, sameSite: 'Lax' })
         }
@@ -115,6 +117,9 @@ export default function LogIn() {
           alert("登入失敗，請檢查帳號密碼是否正確!");
         }
       );
+      if(loginStatus){
+        redirect("passwords");
+      }
   }
 
   const handleSubmit = (event) => {

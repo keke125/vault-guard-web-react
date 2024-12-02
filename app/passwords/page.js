@@ -29,6 +29,7 @@ import { DateTimeField, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import 'moment/locale/zh-tw';
 import { TOTP } from "totp-generator";
+import { redirect } from 'next/navigation';
 
 function EditToolbar(props) {
 
@@ -64,7 +65,7 @@ function EditToolbar(props) {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            return;
+            redirect("/log-in");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
             method: 'POST',
@@ -94,6 +95,7 @@ function EditToolbar(props) {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
                     } else {
                         alert(error.message);
                     }
@@ -365,10 +367,13 @@ export default function Passwords() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            return;
+            redirect("/log-in");
         }
+        const url = new URL('http://localhost:8080/api/v1/password/passwords');
+        const params = new URLSearchParams({ type: "json" });
+        url.search = params;
         // fetch data from server
-        await fetch('http://localhost:8080/api/v1/password/passwords', {
+        await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-type': 'application/json',
@@ -388,8 +393,10 @@ export default function Passwords() {
                 }
             ).catch(
                 (error) => {
+                    console.log(error)
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
                     } else {
                         alert(error.message);
                     }
@@ -416,7 +423,7 @@ export default function Passwords() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            return;
+            redirect("/log-in");
         }
         await fetch(`http://localhost:8080/api/v1/password/password/${id}`, {
             method: 'GET',
@@ -460,6 +467,7 @@ export default function Passwords() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
                     } else {
                         alert(error.message);
                     }
@@ -484,7 +492,7 @@ export default function Passwords() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            return;
+            redirect("/log-in");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
             method: 'DELETE',
@@ -515,6 +523,7 @@ export default function Passwords() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
                     } else {
                         alert(error.message);
                     }
@@ -535,7 +544,7 @@ export default function Passwords() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            return;
+            redirect("/log-in");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
             method: 'PATCH',
@@ -565,6 +574,7 @@ export default function Passwords() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
                     } else {
                         alert(error.message);
                     }
