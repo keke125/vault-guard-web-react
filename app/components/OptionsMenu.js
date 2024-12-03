@@ -1,15 +1,16 @@
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
-import Divider, { dividerClasses } from '@mui/material/Divider';
+import { dividerClasses } from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
 import MuiMenuItem from '@mui/material/MenuItem';
 import { paperClasses } from '@mui/material/Paper';
 import { listClasses } from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon, { listItemIconClasses } from '@mui/material/ListItemIcon';
-import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import { listItemIconClasses } from '@mui/material/ListItemIcon';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import MenuButton from './MenuButton';
+import Cookies from 'js-cookie';
+import { redirect } from 'next/navigation';
 
 const MenuItem = styled(MuiMenuItem)({
   margin: '2px 0',
@@ -23,6 +24,10 @@ export default function OptionsMenu() {
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const Logout = () => {
+    Cookies.remove('token');
+    redirect("/log-in");
   };
   return (
     <React.Fragment>
@@ -53,10 +58,8 @@ export default function OptionsMenu() {
           },
         }}
       >
-        <MenuItem onClick={handleClose}>帳號設定</MenuItem>
-        <Divider />
         <MenuItem
-          onClick={handleClose}
+          onClick={Logout}
           sx={{
             [`& .${listItemIconClasses.root}`]: {
               ml: 'auto',
@@ -65,9 +68,6 @@ export default function OptionsMenu() {
           }}
         >
           <ListItemText>登出</ListItemText>
-          <ListItemIcon>
-            <LogoutRoundedIcon fontSize="small" />
-          </ListItemIcon>
         </MenuItem>
       </Menu>
     </React.Fragment>

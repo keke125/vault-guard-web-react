@@ -11,10 +11,16 @@ import MenuContent from './MenuContent';
 
 import * as jose from 'jose';
 import Cookies from 'js-cookie';
+import { redirect } from 'next/navigation';
 
 function SideMenuMobile({ open, toggleDrawer }) {
 
   const [username, setUsername] = React.useState("");
+
+  const Logout = () => {
+    Cookies.remove('token');
+    redirect("/log-in");
+  };
 
   React.useEffect(() => {
     const token = Cookies.get('token');
@@ -56,7 +62,7 @@ function SideMenuMobile({ open, toggleDrawer }) {
           <Divider />
         </Stack>
         <Stack sx={{ p: 2 }}>
-          <Button variant="outlined" fullWidth startIcon={<LogoutRoundedIcon />}>
+          <Button variant="outlined" fullWidth startIcon={<LogoutRoundedIcon />} onClick={Logout}>
             登出
           </Button>
         </Stack>
