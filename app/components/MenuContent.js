@@ -5,34 +5,47 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import AnalyticsRoundedIcon from '@mui/icons-material/AnalyticsRounded';
-import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import EnhancedEncryptionIcon from '@mui/icons-material/EnhancedEncryption';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
-import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
+import KeyIcon from '@mui/icons-material/Key';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { redirect } from 'next/navigation';
 
 const mainListItems = [
-  { text: 'Home', icon: <HomeRoundedIcon /> },
-  { text: 'Analytics', icon: <AnalyticsRoundedIcon /> },
-  { text: 'Clients', icon: <PeopleRoundedIcon /> },
-  { text: 'Tasks', icon: <AssignmentRoundedIcon /> },
+  { text: '密碼庫', icon: <EnhancedEncryptionIcon /> },
+  { text: '密碼產生器', icon: <KeyIcon /> },
 ];
 
 const secondaryListItems = [
-  { text: 'Settings', icon: <SettingsRoundedIcon /> },
-  { text: 'About', icon: <InfoRoundedIcon /> },
-  { text: 'Feedback', icon: <HelpRoundedIcon /> },
+  { text: '密碼庫設定', icon: <SettingsRoundedIcon /> },
+  { text: '帳號設定', icon: <AccountCircleIcon /> },
 ];
 
 export default function MenuContent() {
+  const links = ['/passwords', '/password-generator', '/vault', '/account'];
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const pathname = window.location.pathname;
+    if (links.includes(pathname)) {
+      setSelectedIndex(links.indexOf(pathname));
+    }
+  });
+
+  const handleListItemClick = (index) => {
+    setSelectedIndex(index);
+    redirect(links[index]);
+  };
+
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
       <List dense>
         {mainListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-            <ListItemButton selected={index === 0}>
+            <ListItemButton
+              selected={selectedIndex === index}
+              onClick={() => handleListItemClick(index)}
+            >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
@@ -43,7 +56,10 @@ export default function MenuContent() {
       <List dense>
         {secondaryListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-            <ListItemButton>
+            <ListItemButton
+              selected={selectedIndex === index + 2}
+              onClick={() => handleListItemClick(index + 2)}
+            >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>

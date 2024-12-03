@@ -53,11 +53,7 @@ export default function OptionsMenu() {
           },
         }}
       >
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
-        <Divider />
-        <MenuItem onClick={handleClose}>Add another account</MenuItem>
-        <MenuItem onClick={handleClose}>Settings</MenuItem>
+        <MenuItem onClick={handleClose}>帳號設定</MenuItem>
         <Divider />
         <MenuItem
           onClick={handleClose}
@@ -68,7 +64,7 @@ export default function OptionsMenu() {
             },
           }}
         >
-          <ListItemText>Logout</ListItemText>
+          <ListItemText>登出</ListItemText>
           <ListItemIcon>
             <LogoutRoundedIcon fontSize="small" />
           </ListItemIcon>

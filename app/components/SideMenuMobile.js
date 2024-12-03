@@ -1,18 +1,27 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Drawer, { drawerClasses } from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
 
-import MenuButton from './MenuButton';
 import MenuContent from './MenuContent';
 
+import * as jose from 'jose';
+import Cookies from 'js-cookie';
+
 function SideMenuMobile({ open, toggleDrawer }) {
+
+  const [username, setUsername] = React.useState("");
+
+  React.useEffect(() => {
+    const token = Cookies.get('token');
+    const claims = jose.decodeJwt(token);
+    setUsername(claims["sub"]);
+  });
+
   return (
     <Drawer
       anchor="right"
@@ -37,12 +46,9 @@ function SideMenuMobile({ open, toggleDrawer }) {
             sx={{ gap: 1, alignItems: 'center', flexGrow: 1, p: 1 }}
           >
             <Typography component="p" variant="h6">
-              Riley Carter
+              {username}
             </Typography>
           </Stack>
-          <MenuButton showBadge>
-            <NotificationsRoundedIcon />
-          </MenuButton>
         </Stack>
         <Divider />
         <Stack sx={{ flexGrow: 1 }}>
@@ -51,7 +57,7 @@ function SideMenuMobile({ open, toggleDrawer }) {
         </Stack>
         <Stack sx={{ p: 2 }}>
           <Button variant="outlined" fullWidth startIcon={<LogoutRoundedIcon />}>
-            Logout
+            登出
           </Button>
         </Stack>
       </Stack>
