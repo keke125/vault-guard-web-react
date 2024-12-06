@@ -110,7 +110,7 @@ export default function LogIn() {
         (response) => {
           loginStatus = true;
           alert("登入成功，將跳轉至密碼庫頁面");
-          Cookies.set('token', response['token'], { secure: true, sameSite: 'Lax' })
+          Cookies.set('token', response['token'], { secure: true, sameSite: 'Lax', expires: 1 })
         }
       ).catch(
         () => {
