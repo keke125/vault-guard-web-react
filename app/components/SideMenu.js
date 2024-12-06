@@ -28,6 +28,9 @@ export default function SideMenu() {
 
   React.useEffect(() => {
     const token = Cookies.get('token');
+    if (token === undefined || token === '') {
+      return;
+    }
     const claims = jose.decodeJwt(token);
     setUsername(claims["sub"]);
   });
