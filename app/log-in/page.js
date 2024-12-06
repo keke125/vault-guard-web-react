@@ -78,7 +78,7 @@ export default function LogIn() {
 
     if (!password.value || !((8 <= password.value.length) && (password.value.length <= 128))) {
       setPasswordError(true);
-      setPasswordErrorMessage('密碼長度必須在8-128字元之間!');
+      setPasswordErrorMessage('主密碼長度必須在8-128字元之間!');
       isValid = false;
     } else {
       setPasswordError(false);
@@ -109,17 +109,17 @@ export default function LogIn() {
       }).then(
         (response) => {
           loginStatus = true;
-          alert("登入成功");
+          alert("登入成功，將跳轉至密碼庫頁面");
           Cookies.set('token', response['token'], { secure: true, sameSite: 'Lax' })
         }
       ).catch(
         () => {
-          alert("登入失敗，請檢查帳號密碼是否正確!");
+          alert("登入失敗，請檢查帳號及主密碼是否正確!");
         }
       );
-      if(loginStatus){
-        redirect("passwords");
-      }
+    if (loginStatus) {
+      redirect("passwords");
+    }
   }
 
   const handleSubmit = (event) => {
@@ -172,12 +172,12 @@ export default function LogIn() {
             />
           </FormControl>
           <FormControl>
-            <FormLabel htmlFor="password">密碼</FormLabel>
+            <FormLabel htmlFor="password">主密碼</FormLabel>
             <TextField
               error={passwordError}
               helperText={passwordErrorMessage}
               name="password"
-              placeholder="請輸入密碼"
+              placeholder="請輸入主密碼"
               type={showPassword ? 'text' : 'password'}
               id="password"
               autoComplete="current-password"
@@ -208,6 +208,12 @@ export default function LogIn() {
             onClick={validateInputs}
           >
             登入
+          </Button>
+          <Button
+            fullWidth
+            onClick={() => redirect("/sign-up")}
+          >
+            註冊
           </Button>
         </Box>
       </Card>
