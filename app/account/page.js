@@ -8,6 +8,7 @@ import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 import * as React from 'react';
+import Cookies from 'js-cookie';
 
 export default function Account() {
 
@@ -38,18 +39,31 @@ export default function Account() {
 
     const handleSelectedTabChange = (newValue) => {
         setSelectedTab(newValue);
+        clearChangePassword();
+        clearChangeEmail();
+    };
+
+    const clearPassword = () => {
         setPasswordError(false);
+        setPasswordErrorMessage('');
+        setShowPassword(false);
+    }
+
+    const clearChangePassword = () => {
         setNewPasswordError(false);
         setRepeatedNewPasswordError(false);
-        setPasswordErrorMessage('');
         setNewPasswordErrorMessage('');
         setRepeatedNewPasswordErrorMessage('');
-        setShowPassword(false);
         setShowNewPassword(false);
         setShowRepeatedNewPassword(false);
+        clearPassword();
+    }
+
+    const clearChangeEmail = () => {
         setEmailError(false);
         setEmailErrorMessage('');
-    };
+        clearPassword();
+    }
 
     const validateChangePasswordInput = () => {
         const password = document.getElementById('password');
@@ -98,40 +112,59 @@ export default function Account() {
     };
 
     const submitChangePasswordData = async (password, newPassword) => {
-        /*
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
             redirect("/log-in");
         }
-        await fetch('http://localhost:8080/api/v1/auth/log-in', {
-            method: 'POST',
+        const url = new URL('http://localhost:8080/api/v1/account/user');
+        const params = new URLSearchParams({ type: "password" });
+        url.search = params;
+        await fetch(url, {
+            method: 'PATCH',
             body: JSON.stringify({
-                username: username,
-                password: password,
+                oldPassword: password,
+                newPassword: newPassword
             }),
             headers: {
-                'Content-type': 'application/json'
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
             }
         })
             .then((response) => {
                 if (response.ok) {
                     return response.json();
-                } else {
-                    throw new Error("登入失敗");
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`變更失敗，${response["message"]}`) });
+                } else if (response.status === 403) {
+                    return response.json().then((response) => {
+                        if (response["message"]) {
+                            throw new Error(`變更失敗，${response["message"]}`);
+                        } else {
+                            throw new Error();
+                        }
+                    })
+                }
+                else {
+                    throw new Error("變更失敗!");
                 }
             }).then(
                 (response) => {
-                    loginStatus = true;
-                    alert("登入成功，將跳轉至密碼庫頁面");
-                    Cookies.set('token', response['token'], { secure: true, sameSite: 'Lax' })
+                    alert(response["message"]);
+                    document.getElementById("password").value = '';
+                    document.getElementById("newPassword").value = '';
+                    document.getElementById("repeatedNewPassword").value = '';
+                    clearChangePassword();
                 }
             ).catch(
-                () => {
-                    alert("登入失敗，請檢查帳號及主密碼是否正確!");
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else if (error.message) {
+                        alert(error.message);
+                    }
                 }
             );
-            */
     }
 
     const handleChangePasswordSubmit = (event) => {
@@ -172,40 +205,58 @@ export default function Account() {
     };
 
     const submitChangeEmailData = async (email, password) => {
-        /*
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
             redirect("/log-in");
         }
-        await fetch('http://localhost:8080/api/v1/auth/log-in', {
-            method: 'POST',
+        const url = new URL('http://localhost:8080/api/v1/account/user');
+        const params = new URLSearchParams({ type: "email" });
+        url.search = params;
+        await fetch(url, {
+            method: 'PATCH',
             body: JSON.stringify({
-                username: username,
-                password: password,
+                email: email,
+                oldPassword: password
             }),
             headers: {
-                'Content-type': 'application/json'
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
             }
         })
             .then((response) => {
                 if (response.ok) {
                     return response.json();
-                } else {
-                    throw new Error("登入失敗");
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`修改失敗，${response["message"]}`) });
+                } else if (response.status === 403) {
+                    return response.json().then((response) => {
+                        if (response["message"]) {
+                            throw new Error(`修改失敗，${response["message"]}`);
+                        } else {
+                            throw new Error();
+                        }
+                    })
+                }
+                else {
+                    throw new Error("修改失敗!");
                 }
             }).then(
                 (response) => {
-                    loginStatus = true;
-                    alert("登入成功，將跳轉至密碼庫頁面");
-                    Cookies.set('token', response['token'], { secure: true, sameSite: 'Lax' })
+                    alert(response["message"]);
+                    document.getElementById("email").value = '';
+                    document.getElementById("password").value = '';
+                    clearChangeEmail();
                 }
             ).catch(
-                () => {
-                    alert("登入失敗，請檢查帳號及主密碼是否正確!");
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                    } else if (error.message) {
+                        alert(error.message);
+                    }
                 }
             );
-            */
     }
 
     const handleChangeEmailSubmit = (event) => {
