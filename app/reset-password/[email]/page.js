@@ -6,7 +6,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import * as React from 'react';
-import { redirect } from 'next/navigation';
+import { redirect, usePathname, useSearchParams } from 'next/navigation';
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
@@ -27,7 +27,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
     }),
 }));
 
-const SignUpContainer = styled(Stack)(({ theme }) => ({
+const ResetPasswordContainer = styled(Stack)(({ theme }) => ({
     minHeight: '100%',
     padding: theme.spacing(2),
     [theme.breakpoints.up('sm')]: {
@@ -49,21 +49,26 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export default function LogIn() {
+export default function ResetPasswordByEmail() {
 
-    const [usernameError, setUsernameError] = React.useState(false);
-    const [usernameErrorMessage, setUsernameErrorMessage] = React.useState('');
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const [email, setEmail] = React.useState('');
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-    const [passwordError, setPasswordError] = React.useState(false);
-    const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-    const [repeatedPasswordError, setRepeatedPasswordError] = React.useState(false);
-    const [repeatedPasswordErrorMessage, setRepeatedPasswordErrorMessage] = React.useState('');
-    const [showPassword, setShowPassword] = React.useState(false);
-    const [showRepeatedPassword, setShowRepeatedPassword] = React.useState(false);
+    const [token, setToken] = React.useState('');
+    const [tokenError, setTokenError] = React.useState(false);
+    const [tokenErrorMessage, setTokenErrorMessage] = React.useState('');
+    const [newPasswordError, setNewPasswordError] = React.useState(false);
+    const [newPasswordErrorMessage, setNewPasswordErrorMessage] = React.useState('');
+    const [repeatedNewPasswordError, setRepeatedNewPasswordError] = React.useState(false);
+    const [repeatedNewPasswordErrorMessage, setRepeatedNewPasswordErrorMessage] = React.useState('');
+    const [showNewPassword, setShowNewPassword] = React.useState(false);
+    const [showRepeatedNewPassword, setShowRepeatedNewPassword] = React.useState(false);
 
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-    const handleClickShowRepeatedPassword = () => setShowRepeatedPassword((show) => !show);
+    const handleClickShowNewPassword = () => setShowNewPassword((show) => !show);
+    const handleClickShowRepeatedNewPassword = () => setShowRepeatedNewPassword((show) => !show);
 
     const validateEmail = (email) => {
         return String(email)
@@ -74,21 +79,12 @@ export default function LogIn() {
     };
 
     const validateInputs = () => {
-        const username = document.getElementById('username');
         const email = document.getElementById('email');
-        const password = document.getElementById('password');
-        const repeatedPassword = document.getElementById('repeatedPassword');
+        const token = document.getElementById('token');
+        const newPassword = document.getElementById('newPassword');
+        const repeatedNewPassword = document.getElementById('repeatedNewPassword');
 
         let isValid = true;
-
-        if (!username.value) {
-            setUsernameError(true);
-            setUsernameErrorMessage('請輸入帳號!');
-            isValid = false;
-        } else {
-            setUsernameError(false);
-            setUsernameErrorMessage('');
-        }
 
         if (!email.value || !validateEmail(email.value)) {
             setEmailError(true);
@@ -99,44 +95,53 @@ export default function LogIn() {
             setEmailErrorMessage('');
         }
 
-        if (!password.value || !((8 <= password.value.length) && (password.value.length <= 128))) {
-            setPasswordError(true);
-            setPasswordErrorMessage('主密碼長度必須在8-128字元之間!');
+        if (!token.value) {
+            setTokenError(true);
+            setTokenErrorMessage('請輸入驗證碼!');
             isValid = false;
         } else {
-            setPasswordError(false);
-            setPasswordErrorMessage('');
+            setTokenError(false);
+            setTokenErrorMessage('');
         }
 
-        if (!repeatedPassword.value || !((8 <= repeatedPassword.value.length) && (repeatedPassword.value.length <= 128))) {
-            setRepeatedPasswordError(true);
-            setRepeatedPasswordErrorMessage('主密碼長度必須在8-128字元之間!');
+        if (!newPassword.value || !((8 <= newPassword.value.length) && (newPassword.value.length <= 128))) {
+            setNewPasswordError(true);
+            setNewPasswordErrorMessage('新的主密碼長度必須在8-128字元之間!');
             isValid = false;
         } else {
-            setRepeatedPasswordError(false);
-            setRepeatedPasswordErrorMessage('');
+            setNewPasswordError(false);
+            setNewPasswordErrorMessage('');
         }
 
-        if (repeatedPassword.value !== password.value) {
-            setRepeatedPasswordError(true);
-            setRepeatedPasswordErrorMessage('請輸入相符的主密碼!');
+        if (!repeatedNewPassword.value || !((8 <= repeatedNewPassword.value.length) && (repeatedNewPassword.value.length <= 128))) {
+            setRepeatedNewPasswordError(true);
+            setRepeatedNewPasswordErrorMessage('新的主密碼長度必須在8-128字元之間!');
+            isValid = false;
+        } else {
+            setRepeatedNewPasswordError(false);
+            setRepeatedNewPasswordErrorMessage('');
+        }
+
+        if (repeatedNewPassword.value !== newPassword.value) {
+            setRepeatedNewPasswordError(true);
+            setRepeatedNewPasswordErrorMessage('請輸入相符的主密碼!');
             isValid = false;
         } else if (isValid) {
-            setRepeatedPasswordError(false);
-            setRepeatedPasswordErrorMessage('');
+            setRepeatedNewPasswordError(false);
+            setRepeatedNewPasswordErrorMessage('');
         }
 
         return isValid;
     };
 
-    const submitData = async (username, password, email) => {
-        let signUpStatus = false;
-        await fetch('http://localhost:8080/api/v1/auth/sign-up', {
+    const submitData = async (email, newPassword) => {
+        let resetPasswordStatus = false;
+        await fetch('http://localhost:8080/api/v1/account/reset', {
             method: 'POST',
             body: JSON.stringify({
-                username: username,
-                password: password,
-                email: email
+                email: email,
+                token: token,
+                newPassword: newPassword
             }),
             headers: {
                 'Content-type': 'application/json'
@@ -146,48 +151,57 @@ export default function LogIn() {
                 if (response.ok) {
                     return response.json();
                 } else if (response.status === 400) {
-                    return response.json().then((response) => { throw new Error(`註冊失敗，${response["message"]}`) });
+                    return response.json().then((response) => { throw new Error(`重設失敗，${response["message"]}`) });
                 } else {
-                    throw new Error();
+                    throw new Error("重設失敗，請檢查電子信箱是否正確!");
                 }
             }).then(
-                () => {
-                    signUpStatus = true;
-                    alert("註冊成功，將跳轉至登入頁面");
+                (response) => {
+                    alert(response["message"]);
+                    resetPasswordStatus = true;
                 }
             ).catch(
                 (error) => {
                     if (error.message) {
                         alert(error.message);
-                    } else {
-                        alert("註冊失敗!");
                     }
                 }
             );
-        if (signUpStatus) {
-            redirect("/log-in");
+        if (resetPasswordStatus) {
+            redirect(`/log-in`);
         }
     }
 
     const handleSubmit = (event) => {
-        if (usernameError || passwordError || emailError || repeatedPasswordError) {
+        if (emailError | tokenError | newPasswordError | repeatedNewPasswordError) {
             event.preventDefault();
             return;
         }
         const data = new FormData(event.currentTarget);
-        submitData(data.get('username'), data.get('password'), data.get('email'));
+        submitData(data.get('email'), data.get('newPassword'));
         event.preventDefault();
     };
 
+    React.useEffect(() => {
+        if (pathname) {
+            if (validateEmail(pathname.replace("/reset-password/", ""))) {
+                setEmail(pathname.replace("/reset-password/", ""));
+            }
+        }
+        if (searchParams.get('token')) {
+            setToken(searchParams.get('token'));
+        }
+    }, []);
+
     return (
-        <SignUpContainer direction="column" justifyContent="space-between">
+        <ResetPasswordContainer direction="column" justifyContent="space-between">
             <Card variant="outlined">
                 <Typography
                     component="h1"
                     variant="h4"
                     sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
                 >
-                    註冊
+                    重設密碼
                 </Typography>
                 <Box
                     component="form"
@@ -202,23 +216,6 @@ export default function LogIn() {
                     }}
                 >
                     <FormControl>
-                        <FormLabel htmlFor="username">帳號</FormLabel>
-                        <TextField
-                            error={usernameError}
-                            helperText={usernameErrorMessage}
-                            id="username"
-                            type="text"
-                            name="username"
-                            placeholder="請輸入帳號"
-                            autoComplete="username"
-                            autoFocus
-                            required
-                            fullWidth
-                            variant="outlined"
-                            color={usernameError ? 'error' : 'primary'}
-                        />
-                    </FormControl>
-                    <FormControl>
                         <FormLabel htmlFor="email">電子信箱</FormLabel>
                         <TextField
                             error={emailError}
@@ -226,6 +223,7 @@ export default function LogIn() {
                             id="email"
                             type="email"
                             name="email"
+                            value={email}
                             placeholder="請輸入電子信箱"
                             autoComplete="email"
                             autoFocus
@@ -233,32 +231,56 @@ export default function LogIn() {
                             fullWidth
                             variant="outlined"
                             color={emailError ? 'error' : 'primary'}
+                            onChange={(event) => {
+                                setEmail(event.target.value);
+                            }}
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="password">主密碼</FormLabel>
+                        <FormLabel htmlFor="token">驗證碼</FormLabel>
                         <TextField
-                            error={passwordError}
-                            helperText={passwordErrorMessage}
-                            name="password"
-                            placeholder="請輸入主密碼"
-                            type={showPassword ? 'text' : 'password'}
-                            id="password"
+                            error={tokenError}
+                            helperText={tokenErrorMessage}
+                            id="token"
+                            type="token"
+                            name="token"
+                            value={token}
+                            placeholder="請輸入驗證碼"
+                            autoComplete="token"
+                            autoFocus
+                            required
+                            fullWidth
+                            variant="outlined"
+                            color={tokenError ? 'error' : 'primary'}
+                            onChange={(event) => {
+                                setToken(event.target.value);
+                            }}
+                        />
+                    </FormControl>
+                    <FormControl>
+                        <FormLabel htmlFor="newPassword">新的主密碼</FormLabel>
+                        <TextField
+                            error={newPasswordError}
+                            helperText={newPasswordErrorMessage}
+                            name="newPassword"
+                            placeholder="請輸入新的主密碼"
+                            type={showNewPassword ? 'text' : 'password'}
+                            id="newPassword"
                             autoComplete="new-password"
                             autoFocus
                             required
                             fullWidth
                             variant="outlined"
-                            color={passwordError ? 'error' : 'primary'}
+                            color={newPasswordError ? 'error' : 'primary'}
                             slotProps={{
                                 input: {
                                     endAdornment: <InputAdornment position="end">
                                         <IconButton
                                             aria-label="toggle password visibility"
-                                            onClick={handleClickShowPassword}
+                                            onClick={handleClickShowNewPassword}
                                             edge="end"
                                         >
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            {showNewPassword ? <VisibilityOff /> : <Visibility />}
                                         </IconButton>
                                     </InputAdornment>,
                                 },
@@ -266,29 +288,29 @@ export default function LogIn() {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="repeatedPassword">確認主密碼</FormLabel>
+                        <FormLabel htmlFor="repeatedNewPassword">確認新的主密碼</FormLabel>
                         <TextField
-                            error={repeatedPasswordError}
-                            helperText={repeatedPasswordErrorMessage}
-                            name="repeatedPassword"
-                            placeholder="請再次輸入主密碼"
-                            type={showRepeatedPassword ? 'text' : 'password'}
-                            id="repeatedPassword"
+                            error={repeatedNewPasswordError}
+                            helperText={repeatedNewPasswordErrorMessage}
+                            name="repeatedNewPassword"
+                            placeholder="請再次輸入新的主密碼"
+                            type={showRepeatedNewPassword ? 'text' : 'password'}
+                            id="repeatedNewPassword"
                             autoComplete="new-password"
                             autoFocus
                             required
                             fullWidth
                             variant="outlined"
-                            color={repeatedPasswordError ? 'error' : 'primary'}
+                            color={repeatedNewPasswordError ? 'error' : 'primary'}
                             slotProps={{
                                 input: {
                                     endAdornment: <InputAdornment position="end">
                                         <IconButton
                                             aria-label="toggle password visibility"
-                                            onClick={handleClickShowRepeatedPassword}
+                                            onClick={handleClickShowRepeatedNewPassword}
                                             edge="end"
                                         >
-                                            {showRepeatedPassword ? <VisibilityOff /> : <Visibility />}
+                                            {showRepeatedNewPassword ? <VisibilityOff /> : <Visibility />}
                                         </IconButton>
                                     </InputAdornment>,
                                 },
@@ -301,7 +323,14 @@ export default function LogIn() {
                         variant="contained"
                         onClick={validateInputs}
                     >
-                        註冊
+                        重設密碼
+                    </Button>
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        onClick={() => redirect("/reset-password")}
+                    >
+                        重新取得確認信
                     </Button>
                     <Button
                         fullWidth
@@ -309,14 +338,8 @@ export default function LogIn() {
                     >
                         登入
                     </Button>
-                    <Button
-                        fullWidth
-                        onClick={() => redirect("/reset-password")}
-                    >
-                        忘記密碼
-                    </Button>
                 </Box>
             </Card>
-        </SignUpContainer>
+        </ResetPasswordContainer>
     )
 }

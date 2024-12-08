@@ -215,6 +215,12 @@ export default function LogIn() {
           >
             註冊
           </Button>
+          <Button
+            fullWidth
+            onClick={() => redirect("/reset-password")}
+          >
+            忘記密碼
+          </Button>
         </Box>
       </Card>
     </SignInContainer>
