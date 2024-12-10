@@ -204,7 +204,7 @@ export default function Vault() {
             alert("身分驗證失敗，請重新登入!");
             redirect("/log-in");
         }
-        const url = new URL('http://localhost:8080/api/v1/password/passwords');
+        const url = new URL('http://localhost:8080/api/v1/password/vault');
         await fetch(url, {
             method: 'DELETE',
             headers: {
