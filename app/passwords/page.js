@@ -33,18 +33,26 @@ import { redirect } from 'next/navigation';
 
 function EditToolbar(props) {
 
-    const { addPasswordOpen, setAddPasswordOpen, refreshAllPasswords } = props;
+    const { addPasswordOpen, setAddPasswordOpen, deletePasswordOpen, setDeletePasswordOpen, refreshAllPasswords, rowSelectionModel } = props;
     const [showPassword, setShowPassword] = React.useState(false);
     const [urlList, setUrlList] = React.useState([]);
 
-    const handleClose = () => {
+    const handleAddPasswordClose = () => {
         setAddPasswordOpen(false);
         setUrlList([]);
         setShowPassword(false);
     };
 
+    const handleDeletePasswordClose = () => {
+        setDeletePasswordOpen(false);
+    };
+
     const handleClickAddPassword = () => {
         setAddPasswordOpen(true);
+    };
+
+    const handleClickDeletePassword = () => {
+        setDeletePasswordOpen(true);
     };
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -61,7 +69,7 @@ function EditToolbar(props) {
         setUrlList(urlList.filter((url) => url['id'] !== id));
     }
 
-    const submitData = async (formJson) => {
+    const submitAddPasswordData = async (formJson) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
@@ -103,11 +111,57 @@ function EditToolbar(props) {
             );
     }
 
+    const submitDeletePasswordData = async () => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            alert("身分驗證失敗，請重新登入!");
+            redirect("/log-in");
+        }
+        await fetch('http://localhost:8080/api/v1/password/delete-passwords', {
+            method: 'POST',
+            body: JSON.stringify({
+                passwordUidList: rowSelectionModel
+            }
+            ),
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    refreshAllPasswords();
+                    return response.json();
+                } else if (response.status === 400) {
+                    throw new Error(`刪除失敗!`);
+                } else if (response.status === 403) {
+                    throw new Error();
+                }
+            })
+            .then(
+                (response) => {
+                    alert(`刪除成功: ${response["successCnt"]}個\n刪除失敗: ${response["failedCnt"]}個`);
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch') {
+                        alert("身分驗證失敗，請重新登入!");
+                        redirect("/log-in");
+                    } else {
+                        alert(error.message);
+                    }
+                }
+            );
+    }
+
     return (
         <React.Fragment>
             <GridToolbarContainer>
                 <Button color="primary" startIcon={<AddIcon />} onClick={handleClickAddPassword}>
                     新增密碼
+                </Button>
+                <Button color="primary" startIcon={<DeleteIcon />} onClick={handleClickDeletePassword}>
+                    刪除選取的密碼
                 </Button>
             </GridToolbarContainer>
             <Dialog
@@ -119,8 +173,8 @@ function EditToolbar(props) {
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries(formData.entries());
                         formJson['urlList'] = urlList.map(item => item.value);
-                        submitData(formJson);
-                        handleClose();
+                        submitAddPasswordData(formJson);
+                        handleAddPasswordClose();
                     },
                 }}
             >
@@ -258,8 +312,34 @@ function EditToolbar(props) {
                     <Button sx={{ marginTop: 1, marginBottom: 1 }} onClick={handleAddNewUrl}>新增網址(URL)</Button>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>取消</Button>
+                    <Button onClick={handleAddPasswordClose}>取消</Button>
                     <Button type="submit">新增</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={deletePasswordOpen}
+                aria-labelledby="delete-password-alert-dialog-title"
+                aria-describedby="delete-password-alert-dialog-description"
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        submitDeletePasswordData();
+                        handleDeletePasswordClose();
+                    },
+                }}
+            >
+                <DialogTitle id="delete-password-alert-dialog-title">
+                    是否要刪除選取的密碼?
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="delete-password-alert-dialog-description">
+                        刪除後將無法還原。
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDeletePasswordClose}>取消</Button>
+                    <Button type="submit">刪除</Button>
                 </DialogActions>
             </Dialog>
         </React.Fragment>
@@ -298,6 +378,7 @@ export default function Passwords() {
 
     const [rows, setRows] = React.useState([]);
     const [addPasswordOpen, setAddPasswordOpen] = React.useState(false);
+    const [deletePasswordOpen, setDeletePasswordOpen] = React.useState(false);
     const [viewPasswordOpen, setViewPasswordOpen] = React.useState(false);
     const [editPasswordOpen, setEditPasswordOpen] = React.useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
@@ -315,6 +396,7 @@ export default function Passwords() {
     const [showPassword, setShowPassword] = React.useState(false);
     const paginationModel = { page: 0, pageSize: 10 };
     const [progress, setProgress] = React.useState(10);
+    const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
 
     const handleModalOpen = async (id, type) => {
         getPasswordDetails(id);
@@ -671,13 +753,18 @@ export default function Passwords() {
                             initialState={{ pagination: { paginationModel } }}
                             pageSizeOptions={[5, 10]}
                             checkboxSelection
+                            disableRowSelectionOnClick
+                            onRowSelectionModelChange={(newRowSelectionModel) => {
+                                setRowSelectionModel(newRowSelectionModel);
+                            }}
+                            rowSelectionModel={rowSelectionModel}
                             getRowId={getRowId}
                             sx={{ border: 0 }}
                             slots={{
                                 toolbar: EditToolbar,
                             }}
                             slotProps={{
-                                toolbar: { addPasswordOpen, setAddPasswordOpen, refreshAllPasswords },
+                                toolbar: { addPasswordOpen, setAddPasswordOpen, deletePasswordOpen, setDeletePasswordOpen, refreshAllPasswords, rowSelectionModel },
                             }
                             }
                         />
@@ -687,14 +774,14 @@ export default function Passwords() {
             <Dialog
                 open={deleteConfirmOpen}
                 onClose={handleDeleteConfirmClose}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
+                aria-labelledby="delete-password-alert-dialog-title"
+                aria-describedby="delete-password-alert-dialog-description"
             >
-                <DialogTitle id="alert-dialog-title">
+                <DialogTitle id="delete-password-alert-dialog-title">
                     是否要刪除密碼?
                 </DialogTitle>
                 <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
+                    <DialogContentText id="delete-password-alert-dialog-description">
                         刪除後將無法還原。
                     </DialogContentText>
                 </DialogContent>
