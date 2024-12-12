@@ -3,8 +3,9 @@
 import {
     Stack, Box, Paper, Typography, Button, Dialog, DialogTitle,
     DialogContent, TextField, DialogActions, InputAdornment,
-    IconButton, DialogContentText, CircularProgress
+    IconButton, DialogContentText, CircularProgress, Checkbox, Slider
 } from '@mui/material';
+import { FormControlLabel, FormGroup, FormHelperText, FormControl, FormLabel } from '@mui/material';
 import {
     DataGrid, GridToolbarContainer, GridActionsCellItem,
 } from '@mui/x-data-grid';
@@ -19,6 +20,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Visibility, VisibilityOff, AccountCircle } from '@mui/icons-material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
@@ -36,6 +38,50 @@ function EditToolbar(props) {
     const { addPasswordOpen, setAddPasswordOpen, deletePasswordOpen, setDeletePasswordOpen, refreshAllPasswords, rowSelectionModel } = props;
     const [showPassword, setShowPassword] = React.useState(false);
     const [urlList, setUrlList] = React.useState([]);
+    const [generatePasswordOpen, setGeneratePasswordOpen] = React.useState(false);
+    const [password, setPassword] = React.useState("");
+    const [charSetErrorMessage, setCharSetErrorMessage] = React.useState('');
+    const [passwordLength, setPasswordLength] = React.useState(8);
+    const [charSetState, setCharSetState] = React.useState({
+        isUpperCase: true,
+        isLowerCase: true,
+        isNumber: true,
+        isSpecialChar: false,
+    });
+    const { isUpperCase, isLowerCase, isNumber, isSpecialChar } = charSetState;
+    const charSetError = [isUpperCase, isLowerCase, isNumber, isSpecialChar].filter((v) => v).length === 0;
+    const PASSWORD_LENGTH_MAX = 128;
+    const PASSWORD_LENGTH_MIN = 1;
+
+    const passwordLengthMarks = [
+        {
+            value: PASSWORD_LENGTH_MIN,
+            label: PASSWORD_LENGTH_MIN.toString(),
+        },
+        {
+            value: PASSWORD_LENGTH_MAX,
+            label: PASSWORD_LENGTH_MAX.toString(),
+        },
+    ];
+
+    const handleCharSetChange = (event) => {
+        let result = {
+            ...charSetState,
+            [event.target.name]: event.target.checked,
+        }
+        setCharSetState(result);
+        let countFalse = 0;
+        for (let key in result) {
+            if (result[key] === false) {
+                countFalse += 1;
+            }
+        }
+        if (countFalse === 4) {
+            setCharSetErrorMessage('請選擇至少一種字集!')
+        } else {
+            setCharSetErrorMessage('');
+        }
+    };
 
     const handleAddPasswordClose = () => {
         setAddPasswordOpen(false);
@@ -47,12 +93,22 @@ function EditToolbar(props) {
         setDeletePasswordOpen(false);
     };
 
+    const handleGeneratePasswordClose = () => {
+        setGeneratePasswordOpen(false);
+        setShowPassword(false);
+    };
+
     const handleClickAddPassword = () => {
         setAddPasswordOpen(true);
     };
 
     const handleClickDeletePassword = () => {
         setDeletePasswordOpen(true);
+    };
+
+    const handleClickGeneratePassword = () => {
+        setGeneratePasswordOpen(true);
+        generatePassword();
     };
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -68,6 +124,45 @@ function EditToolbar(props) {
     const handleRemoveUrl = (id) => {
         setUrlList(urlList.filter((url) => url['id'] !== id));
     }
+
+    const handlePasswordLengthChange = (event) => {
+        setPasswordLength(event.target.value);
+    };
+
+    const generatePassword = () => {
+        if (charSetError) {
+            return;
+        }
+        let charSet = [];
+        let password = '';
+        if (isUpperCase) {
+            charSet.push.apply(charSet, [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ']);
+        }
+        if (isLowerCase) {
+            charSet.push.apply(charSet, [...'abcdefghijklmnopqrstuvwxyz']);
+        }
+        if (isNumber) {
+            charSet.push.apply(charSet, [...'0123456789']);
+        }
+        if (isSpecialChar) {
+            charSet.push.apply(charSet, [...'!@#$%^*']);
+        }
+        const array = new Uint32Array(passwordLength);
+        self.crypto.getRandomValues(array);
+        for (const num of array) {
+            password += charSet[num % charSet.length];
+        }
+        setPassword(password);
+    };
+
+    const handleGeneratePassword = () => {
+        if (charSetError) {
+            return;
+        }
+        const passwordElement = document.getElementById("password");
+        passwordElement.value = password;
+        handleGeneratePasswordClose();
+    };
 
     const submitAddPasswordData = async (formJson) => {
         const token = Cookies.get('token');
@@ -154,6 +249,14 @@ function EditToolbar(props) {
             );
     }
 
+    React.useEffect(() => {
+        generatePassword();
+    }, [charSetState]);
+
+    React.useEffect(() => {
+        generatePassword();
+    }, [passwordLength]);
+
     return (
         <React.Fragment>
             <GridToolbarContainer>
@@ -237,6 +340,13 @@ function EditToolbar(props) {
                                     >
                                         {showPassword ? <VisibilityOff /> : <Visibility />}
                                     </IconButton>
+                                    <IconButton
+                                        aria-label="open generate passwword"
+                                        onClick={handleClickGeneratePassword}
+                                        edge="end"
+                                    >
+                                        <RefreshIcon />
+                                    </IconButton>
                                 </InputAdornment>,
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -297,7 +407,7 @@ function EditToolbar(props) {
                                             onClick={() => handleRemoveUrl(url.id)}
                                             edge="end"
                                         >
-                                            <DeleteOutlineIcon></DeleteOutlineIcon>
+                                            <ContentCopyIcon />
                                         </IconButton>
                                     </InputAdornment>,
                                     startAdornment: (
@@ -342,7 +452,62 @@ function EditToolbar(props) {
                     <Button type="submit">刪除</Button>
                 </DialogActions>
             </Dialog>
-        </React.Fragment>
+            <Dialog
+                open={generatePasswordOpen}
+                aria-labelledby="generate-password-alert-dialog-title"
+                aria-describedby="generate-password-alert-dialog-description"
+                fullWidth
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        handleGeneratePassword();
+                    },
+                }}
+            >
+                <DialogTitle id="generate-password-alert-dialog-title">
+                    產生密碼
+                </DialogTitle>
+                <DialogContent sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                }}>
+                    <Typography variant="p" component="p" style={{ wordWrap: "break-word" }}>
+                        {password}
+                    </Typography>
+                    <FormControl>
+                        <FormLabel htmlFor="passwordLength">密碼長度</FormLabel>
+                        <Slider
+                            marks={passwordLengthMarks}
+                            aria-label="Password Length"
+                            value={passwordLength}
+                            valueLabelDisplay="auto"
+                            min={PASSWORD_LENGTH_MIN}
+                            max={PASSWORD_LENGTH_MAX}
+                            onChange={handlePasswordLengthChange}
+                        />
+                    </FormControl>
+                    <FormControl error={charSetError}>
+                        <FormGroup>
+                            <FormControlLabel control={<Checkbox checked={isUpperCase} name="isUpperCase"
+                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="大寫字母(A-Z)" />
+                            <FormControlLabel control={<Checkbox checked={isLowerCase} name="isLowerCase"
+                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="小寫字母(a-z)" />
+                            <FormControlLabel control={<Checkbox checked={isNumber} name="isNumber"
+                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="數字(0-9)" />
+                            <FormControlLabel control={<Checkbox checked={isSpecialChar} name="isSpecialChar"
+                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="特殊字元(!@#$%^*)" />
+                        </FormGroup>
+                        <FormHelperText>{charSetErrorMessage}</FormHelperText>
+                    </FormControl>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleGeneratePasswordClose}>取消</Button>
+                    <Button type="submit">選擇</Button>
+                </DialogActions>
+            </Dialog>
+        </React.Fragment >
     );
 }
 
@@ -475,7 +640,6 @@ export default function Passwords() {
                 }
             ).catch(
                 (error) => {
-                    console.log(error)
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
