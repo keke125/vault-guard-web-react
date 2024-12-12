@@ -73,7 +73,7 @@ function EditToolbar(props) {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            redirect("/log-in");
+            redirect("/log-in", "push");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
             method: 'POST',
@@ -103,7 +103,7 @@ function EditToolbar(props) {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
-                        redirect("/log-in");
+                        redirect("/log-in", "push");
                     } else {
                         alert(error.message);
                     }
@@ -115,7 +115,7 @@ function EditToolbar(props) {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            redirect("/log-in");
+            redirect("/log-in", "push");
         }
         await fetch('http://localhost:8080/api/v1/password/delete-passwords', {
             method: 'POST',
@@ -146,7 +146,7 @@ function EditToolbar(props) {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
-                        redirect("/log-in");
+                        redirect("/log-in", "push");
                     } else {
                         alert(error.message);
                     }
@@ -449,7 +449,7 @@ export default function Passwords() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            redirect("/log-in");
+            redirect("/log-in", "push");
         }
         const url = new URL('http://localhost:8080/api/v1/password/passwords');
         const params = new URLSearchParams({ type: "json" });
@@ -478,7 +478,7 @@ export default function Passwords() {
                     console.log(error)
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
-                        redirect("/log-in");
+                        redirect("/log-in", "push");
                     } else {
                         alert(error.message);
                     }
@@ -505,7 +505,7 @@ export default function Passwords() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            redirect("/log-in");
+            redirect("/log-in", "push");
         }
         await fetch(`http://localhost:8080/api/v1/password/password/${id}`, {
             method: 'GET',
@@ -549,7 +549,7 @@ export default function Passwords() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
-                        redirect("/log-in");
+                        redirect("/log-in", "push");
                     } else {
                         alert(error.message);
                     }
@@ -574,7 +574,7 @@ export default function Passwords() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            redirect("/log-in");
+            redirect("/log-in", "push");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
             method: 'DELETE',
@@ -605,7 +605,7 @@ export default function Passwords() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
-                        redirect("/log-in");
+                        redirect("/log-in", "push");
                     } else {
                         alert(error.message);
                     }
@@ -626,7 +626,7 @@ export default function Passwords() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            redirect("/log-in");
+            redirect("/log-in", "push");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
             method: 'PATCH',
@@ -656,7 +656,7 @@ export default function Passwords() {
                 (error) => {
                     if (error.message === 'Failed to fetch') {
                         alert("身分驗證失敗，請重新登入!");
-                        redirect("/log-in");
+                        redirect("/log-in", "push");
                     } else {
                         alert(error.message);
                     }

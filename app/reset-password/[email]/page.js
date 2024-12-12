@@ -168,7 +168,7 @@ export default function ResetPasswordByEmail() {
                 }
             );
         if (resetPasswordStatus) {
-            redirect(`/log-in`);
+            redirect("/log-in", "push");
         }
     }
 
@@ -328,13 +328,13 @@ export default function ResetPasswordByEmail() {
                     <Button
                         fullWidth
                         variant="contained"
-                        onClick={() => redirect("/reset-password")}
+                        onClick={() => redirect("/reset-password", "push")}
                     >
                         重新取得確認信
                     </Button>
                     <Button
                         fullWidth
-                        onClick={() => redirect("/log-in")}
+                        onClick={() => redirect("/log-in", "push")}
                     >
                         登入
                     </Button>

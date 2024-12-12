@@ -27,7 +27,7 @@ export default function OptionsMenu() {
   };
   const Logout = () => {
     Cookies.remove('token');
-    redirect("/log-in");
+    redirect("/log-in", "push");
   };
   return (
     <React.Fragment>

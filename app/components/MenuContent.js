@@ -34,7 +34,7 @@ export default function MenuContent() {
 
   const handleListItemClick = (index) => {
     setSelectedIndex(index);
-    redirect(links[index]);
+    redirect(links[index], "push");
   };
 
   return (

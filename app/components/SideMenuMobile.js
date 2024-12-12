@@ -19,7 +19,7 @@ function SideMenuMobile({ open, toggleDrawer }) {
 
   const Logout = () => {
     Cookies.remove('token');
-    redirect("/log-in");
+    redirect("/log-in", "push");
   };
 
   React.useEffect(() => {

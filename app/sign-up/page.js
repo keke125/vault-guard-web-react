@@ -165,7 +165,7 @@ export default function LogIn() {
                 }
             );
         if (signUpStatus) {
-            redirect("/log-in");
+            redirect("/log-in", "push");
         }
     }
 
@@ -305,13 +305,13 @@ export default function LogIn() {
                     </Button>
                     <Button
                         fullWidth
-                        onClick={() => redirect("/log-in")}
+                        onClick={() => redirect("/log-in", "push")}
                     >
                         登入
                     </Button>
                     <Button
                         fullWidth
-                        onClick={() => redirect("/reset-password")}
+                        onClick={() => redirect("/reset-password", "push")}
                     >
                         忘記密碼
                     </Button>

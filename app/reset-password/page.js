@@ -110,7 +110,7 @@ export default function ResetPassword() {
                 }
             );
         if (resetPasswordStatus) {
-            redirect(`/reset-password/${email}`);
+            redirect(`/reset-password/${email}`, "push");
         }
     }
 
@@ -173,13 +173,13 @@ export default function ResetPassword() {
                     </Button>
                     <Button
                         fullWidth
-                        onClick={() => redirect("/log-in")}
+                        onClick={() => redirect("/log-in", "push")}
                     >
                         登入
                     </Button>
                     <Button
                         fullWidth
-                        onClick={() => redirect("/sign-up")}
+                        onClick={() => redirect("/sign-up", "push")}
                     >
                         註冊
                     </Button>

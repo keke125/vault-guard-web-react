@@ -208,7 +208,7 @@ export default function Account() {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             alert("身分驗證失敗，請重新登入!");
-            redirect("/log-in");
+            redirect("/log-in", "push");
         }
         const url = new URL('http://localhost:8080/api/v1/account/user');
         const params = new URLSearchParams({ type: "email" });
