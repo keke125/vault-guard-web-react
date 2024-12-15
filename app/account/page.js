@@ -4,6 +4,7 @@ import { Stack, Box, Tab, Typography, FormControl, FormLabel, IconButton } from 
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { TextField, Button, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Alert, Snackbar } from '@mui/material';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
@@ -24,6 +25,8 @@ export default function Account() {
     const [showRepeatedNewPassword, setShowRepeatedNewPassword] = React.useState(false);
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+    const [alert, setAlert] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState('');
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
     const handleClickShowNewPassword = () => setShowNewPassword((show) => !show);
@@ -114,7 +117,8 @@ export default function Account() {
     const submitChangePasswordData = async (password, newPassword) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in");
         }
         const url = new URL('http://localhost:8080/api/v1/account/user');
@@ -150,7 +154,8 @@ export default function Account() {
                 }
             }).then(
                 (response) => {
-                    alert(response["message"]);
+                    setAlert(true);
+                    setAlertMessage(response["message"]);
                     document.getElementById("password").value = '';
                     document.getElementById("newPassword").value = '';
                     document.getElementById("repeatedNewPassword").value = '';
@@ -159,9 +164,11 @@ export default function Account() {
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                     } else if (error.message) {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -207,7 +214,8 @@ export default function Account() {
     const submitChangeEmailData = async (email, password) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         const url = new URL('http://localhost:8080/api/v1/account/user');
@@ -243,7 +251,8 @@ export default function Account() {
                 }
             }).then(
                 (response) => {
-                    alert(response["message"]);
+                    setAlert(true);
+                    setAlertMessage(response["message"]);
                     document.getElementById("email").value = '';
                     document.getElementById("password").value = '';
                     clearChangeEmail();
@@ -251,9 +260,11 @@ export default function Account() {
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                     } else if (error.message) {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -503,6 +514,29 @@ export default function Account() {
                     </Box>
                 </Stack>
             </Box >
+            {alert ?
+                <Snackbar
+                    open={alert}
+                    autoHideDuration={6000}
+                    onClose={() => { setAlert(false); setAlertMessage(''); }}
+                >{
+                        alertMessage.includes("!") ? <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="warning"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert> : <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert>
+                    }
+                </Snackbar> : <></>}
         </Box >
     )
 }

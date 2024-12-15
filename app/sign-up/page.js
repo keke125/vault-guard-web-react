@@ -3,6 +3,7 @@
 import { Stack, Typography, Box, FormControl, FormLabel, IconButton } from '@mui/material';
 import { TextField, Button, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Alert, Snackbar } from '@mui/material';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import * as React from 'react';
@@ -49,7 +50,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export default function LogIn() {
+export default function SignUp() {
 
     const [usernameError, setUsernameError] = React.useState(false);
     const [usernameErrorMessage, setUsernameErrorMessage] = React.useState('');
@@ -61,6 +62,9 @@ export default function LogIn() {
     const [repeatedPasswordErrorMessage, setRepeatedPasswordErrorMessage] = React.useState('');
     const [showPassword, setShowPassword] = React.useState(false);
     const [showRepeatedPassword, setShowRepeatedPassword] = React.useState(false);
+    const [alert, setAlert] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState('');
+
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
     const handleClickShowRepeatedPassword = () => setShowRepeatedPassword((show) => !show);
@@ -153,14 +157,17 @@ export default function LogIn() {
             }).then(
                 () => {
                     signUpStatus = true;
-                    alert("註冊成功，將跳轉至登入頁面");
+                    setAlert(true);
+                    setAlertMessage("註冊成功，將跳轉至登入頁面");
                 }
             ).catch(
                 (error) => {
                     if (error.message) {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     } else {
-                        alert("註冊失敗!");
+                        setAlert(true);
+                        setAlertMessage("註冊失敗!");
                     }
                 }
             );
@@ -317,6 +324,29 @@ export default function LogIn() {
                     </Button>
                 </Box>
             </Card>
+            {alert ?
+                <Snackbar
+                    open={alert}
+                    autoHideDuration={6000}
+                    onClose={() => { setAlert(false); setAlertMessage(''); }}
+                >{
+                        alertMessage.includes("!") ? <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="warning"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert> : <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert>
+                    }
+                </Snackbar> : <></>}
         </SignUpContainer>
     )
 }

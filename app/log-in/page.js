@@ -3,6 +3,7 @@
 import { Stack, Typography, Box, FormControl, FormLabel, IconButton } from '@mui/material';
 import { TextField, Button, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Alert, Snackbar } from '@mui/material';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import * as React from 'react';
@@ -57,6 +58,8 @@ export default function LogIn() {
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
+  const [alert, setAlert] = React.useState(false);
+  const [alertMessage, setAlertMessage] = React.useState('');
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -109,12 +112,14 @@ export default function LogIn() {
       }).then(
         (response) => {
           loginStatus = true;
-          alert("登入成功，將跳轉至密碼庫頁面");
+          setAlert(true);
+          setAlertMessage("登入成功，將跳轉至密碼庫頁面");
           Cookies.set('token', response['token'], { secure: true, sameSite: 'Lax', expires: 1 })
         }
       ).catch(
         () => {
-          alert("登入失敗，請檢查帳號及主密碼是否正確!");
+          setAlert(true);
+          setAlertMessage("登入失敗，請檢查帳號及主密碼是否正確!");
         }
       );
     if (loginStatus) {
@@ -223,6 +228,29 @@ export default function LogIn() {
           </Button>
         </Box>
       </Card>
-    </SignInContainer>
+      {alert ?
+        <Snackbar
+          open={alert}
+          autoHideDuration={6000}
+          onClose={() => { setAlert(false); setAlertMessage(''); }}
+        >{
+            alertMessage.includes("!") ? <Alert
+              onClose={() => { setAlert(false); setAlertMessage(''); }}
+              severity="warning"
+              variant="filled"
+              sx={{ width: '100%' }}
+            >
+              {alertMessage}
+            </Alert> : <Alert
+              onClose={() => { setAlert(false); setAlertMessage(''); }}
+              severity="success"
+              variant="filled"
+              sx={{ width: '100%' }}
+            >
+              {alertMessage}
+            </Alert>
+          }
+        </Snackbar> : <></>}
+    </SignInContainer >
   )
 }
