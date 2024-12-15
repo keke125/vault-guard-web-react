@@ -57,6 +57,7 @@ function GeneratePassword({ type, generatePasswordOpen, setGeneratePasswordOpen,
             label: PASSWORD_LENGTH_MAX.toString(),
         },
     ];
+    const [passwordReplaceConfirm, setPasswordReplaceConfirm] = React.useState(false);
 
     const handleCharSetChange = (event) => {
         let result = {
@@ -111,13 +112,14 @@ function GeneratePassword({ type, generatePasswordOpen, setGeneratePasswordOpen,
         if (charSetError) {
             return;
         }
-        if (type === "add") {
+        if (type === "edit") {
+            setPasswordReplaceConfirm(true);
+        }
+        else if (type === "add") {
             const passwordElement = document.getElementById("password");
             passwordElement.value = password;
-        } else if (type === "edit") {
-            setPasswordFunction(password);
+            handleGeneratePasswordClose();
         }
-        handleGeneratePasswordClose();
     };
 
     const handleGeneratePasswordClose = () => {
@@ -139,61 +141,97 @@ function GeneratePassword({ type, generatePasswordOpen, setGeneratePasswordOpen,
     }, [passwordLength]);
 
     return (
-        <Dialog
-            open={generatePasswordOpen}
-            aria-labelledby="generate-password-alert-dialog-title"
-            aria-describedby="generate-password-alert-dialog-description"
-            fullWidth
-            PaperProps={{
-                component: 'form',
-                onSubmit: (event) => {
-                    event.preventDefault();
-                    handleGeneratePasswordConfirm();
-                },
-            }}
-        >
-            <DialogTitle id="generate-password-alert-dialog-title">
-                產生密碼
-            </DialogTitle>
-            <DialogContent sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-            }}>
-                <Typography variant="p" component="p" style={{ wordWrap: "break-word" }}>
-                    {password}
-                </Typography>
-                <FormControl>
-                    <FormLabel htmlFor="passwordLength">密碼長度</FormLabel>
-                    <Slider
-                        marks={passwordLengthMarks}
-                        aria-label="Password Length"
-                        value={passwordLength}
-                        valueLabelDisplay="auto"
-                        min={PASSWORD_LENGTH_MIN}
-                        max={PASSWORD_LENGTH_MAX}
-                        onChange={handlePasswordLengthChange}
-                    />
-                </FormControl>
-                <FormControl error={charSetError}>
-                    <FormGroup>
-                        <FormControlLabel control={<Checkbox checked={isUpperCase} name="isUpperCase"
-                            onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="大寫字母(A-Z)" />
-                        <FormControlLabel control={<Checkbox checked={isLowerCase} name="isLowerCase"
-                            onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="小寫字母(a-z)" />
-                        <FormControlLabel control={<Checkbox checked={isNumber} name="isNumber"
-                            onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="數字(0-9)" />
-                        <FormControlLabel control={<Checkbox checked={isSpecialChar} name="isSpecialChar"
-                            onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="特殊字元(!@#$%^*)" />
-                    </FormGroup>
-                    <FormHelperText>{charSetErrorMessage}</FormHelperText>
-                </FormControl>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleGeneratePasswordClose}>取消</Button>
-                <Button type="submit">選擇</Button>
-            </DialogActions>
-        </Dialog>
+        <React.Fragment>
+            <Dialog
+                open={generatePasswordOpen}
+                aria-labelledby="generate-password-alert-dialog-title"
+                aria-describedby="generate-password-alert-dialog-description"
+                fullWidth
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        handleGeneratePasswordConfirm();
+                    },
+                }}
+            >
+                <DialogTitle id="generate-password-alert-dialog-title">
+                    產生密碼
+                </DialogTitle>
+                <DialogContent sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                }}>
+                    <Typography variant="p" component="p" style={{ wordWrap: "break-word" }}>
+                        {password}
+                    </Typography>
+                    <FormControl>
+                        <FormLabel htmlFor="passwordLength">密碼長度</FormLabel>
+                        <Slider
+                            marks={passwordLengthMarks}
+                            aria-label="Password Length"
+                            value={passwordLength}
+                            valueLabelDisplay="auto"
+                            min={PASSWORD_LENGTH_MIN}
+                            max={PASSWORD_LENGTH_MAX}
+                            onChange={handlePasswordLengthChange}
+                        />
+                    </FormControl>
+                    <FormControl error={charSetError}>
+                        <FormGroup>
+                            <FormControlLabel control={<Checkbox checked={isUpperCase} name="isUpperCase"
+                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="大寫字母(A-Z)" />
+                            <FormControlLabel control={<Checkbox checked={isLowerCase} name="isLowerCase"
+                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="小寫字母(a-z)" />
+                            <FormControlLabel control={<Checkbox checked={isNumber} name="isNumber"
+                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="數字(0-9)" />
+                            <FormControlLabel control={<Checkbox checked={isSpecialChar} name="isSpecialChar"
+                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="特殊字元(!@#$%^*)" />
+                        </FormGroup>
+                        <FormHelperText>{charSetErrorMessage}</FormHelperText>
+                    </FormControl>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleGeneratePasswordClose}>取消</Button>
+                    <Button type="submit">選擇</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={passwordReplaceConfirm}
+                aria-labelledby="replace-password-alert-dialog-title"
+                aria-describedby="replace-password-alert-dialog-description"
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        if (type === "edit") {
+                            setPasswordFunction(password);
+                        }
+                        setPasswordReplaceConfirm(false);
+                        setGeneratePasswordOpen(false);
+                    },
+                }}
+            >
+                <DialogTitle id="generate-password-alert-dialog-title">
+                    是否要更新密碼?
+                </DialogTitle>
+                <DialogContent sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                }}>
+                    <Typography variant="p" component="p" style={{ wordWrap: "break-word" }}>
+                        當前密碼將被取代
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setPasswordReplaceConfirm(false)}>取消</Button>
+                    <Button type="submit">確認</Button>
+                </DialogActions>
+            </Dialog>
+        </React.Fragment>
     );
 }
 
