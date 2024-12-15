@@ -33,13 +33,8 @@ import 'moment/locale/zh-tw';
 import { TOTP } from "totp-generator";
 import { redirect } from 'next/navigation';
 
-function EditToolbar(props) {
-
-    const { addPasswordOpen, setAddPasswordOpen, deletePasswordOpen, setDeletePasswordOpen, refreshAllPasswords, rowSelectionModel } = props;
-    const [showPassword, setShowPassword] = React.useState(false);
-    const [urlList, setUrlList] = React.useState([]);
-    const [generatePasswordOpen, setGeneratePasswordOpen] = React.useState(false);
-    const [password, setPassword] = React.useState("");
+function GeneratePassword({ type, generatePasswordOpen, setGeneratePasswordOpen, setPasswordFunction }) {
+    const [password, setPassword] = React.useState('');
     const [charSetErrorMessage, setCharSetErrorMessage] = React.useState('');
     const [passwordLength, setPasswordLength] = React.useState(8);
     const [charSetState, setCharSetState] = React.useState({
@@ -52,7 +47,6 @@ function EditToolbar(props) {
     const charSetError = [isUpperCase, isLowerCase, isNumber, isSpecialChar].filter((v) => v).length === 0;
     const PASSWORD_LENGTH_MAX = 128;
     const PASSWORD_LENGTH_MIN = 1;
-
     const passwordLengthMarks = [
         {
             value: PASSWORD_LENGTH_MIN,
@@ -82,48 +76,6 @@ function EditToolbar(props) {
             setCharSetErrorMessage('');
         }
     };
-
-    const handleAddPasswordClose = () => {
-        setAddPasswordOpen(false);
-        setUrlList([]);
-        setShowPassword(false);
-    };
-
-    const handleDeletePasswordClose = () => {
-        setDeletePasswordOpen(false);
-    };
-
-    const handleGeneratePasswordClose = () => {
-        setGeneratePasswordOpen(false);
-        setShowPassword(false);
-    };
-
-    const handleClickAddPassword = () => {
-        setAddPasswordOpen(true);
-    };
-
-    const handleClickDeletePassword = () => {
-        setDeletePasswordOpen(true);
-    };
-
-    const handleClickGeneratePassword = () => {
-        setGeneratePasswordOpen(true);
-        generatePassword();
-    };
-
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-    const handleAddNewUrl = () => {
-        if (urlList.length !== 0) {
-            setUrlList([...urlList, { id: urlList[urlList.length - 1]['id'] + 1, value: '' }]);
-        } else {
-            setUrlList([...urlList, { id: urlList.length + 1, value: '' }]);
-        }
-    }
-
-    const handleRemoveUrl = (id) => {
-        setUrlList(urlList.filter((url) => url['id'] !== id));
-    }
 
     const handlePasswordLengthChange = (event) => {
         setPasswordLength(event.target.value);
@@ -155,14 +107,141 @@ function EditToolbar(props) {
         setPassword(password);
     };
 
-    const handleGeneratePassword = () => {
+    const handleGeneratePasswordConfirm = () => {
         if (charSetError) {
             return;
         }
-        const passwordElement = document.getElementById("password");
-        passwordElement.value = password;
+        if (type === "add") {
+            const passwordElement = document.getElementById("password");
+            passwordElement.value = password;
+        } else if (type === "edit") {
+            setPasswordFunction(password);
+        }
         handleGeneratePasswordClose();
     };
+
+    const handleGeneratePasswordClose = () => {
+        setGeneratePasswordOpen(false);
+    };
+
+    React.useEffect(() => {
+        if (generatePasswordOpen) {
+            generatePassword();
+        }
+    }, [generatePasswordOpen]);
+
+    React.useEffect(() => {
+        generatePassword();
+    }, [charSetState]);
+
+    React.useEffect(() => {
+        generatePassword();
+    }, [passwordLength]);
+
+    return (
+        <Dialog
+            open={generatePasswordOpen}
+            aria-labelledby="generate-password-alert-dialog-title"
+            aria-describedby="generate-password-alert-dialog-description"
+            fullWidth
+            PaperProps={{
+                component: 'form',
+                onSubmit: (event) => {
+                    event.preventDefault();
+                    handleGeneratePasswordConfirm();
+                },
+            }}
+        >
+            <DialogTitle id="generate-password-alert-dialog-title">
+                產生密碼
+            </DialogTitle>
+            <DialogContent sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+            }}>
+                <Typography variant="p" component="p" style={{ wordWrap: "break-word" }}>
+                    {password}
+                </Typography>
+                <FormControl>
+                    <FormLabel htmlFor="passwordLength">密碼長度</FormLabel>
+                    <Slider
+                        marks={passwordLengthMarks}
+                        aria-label="Password Length"
+                        value={passwordLength}
+                        valueLabelDisplay="auto"
+                        min={PASSWORD_LENGTH_MIN}
+                        max={PASSWORD_LENGTH_MAX}
+                        onChange={handlePasswordLengthChange}
+                    />
+                </FormControl>
+                <FormControl error={charSetError}>
+                    <FormGroup>
+                        <FormControlLabel control={<Checkbox checked={isUpperCase} name="isUpperCase"
+                            onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="大寫字母(A-Z)" />
+                        <FormControlLabel control={<Checkbox checked={isLowerCase} name="isLowerCase"
+                            onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="小寫字母(a-z)" />
+                        <FormControlLabel control={<Checkbox checked={isNumber} name="isNumber"
+                            onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="數字(0-9)" />
+                        <FormControlLabel control={<Checkbox checked={isSpecialChar} name="isSpecialChar"
+                            onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="特殊字元(!@#$%^*)" />
+                    </FormGroup>
+                    <FormHelperText>{charSetErrorMessage}</FormHelperText>
+                </FormControl>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleGeneratePasswordClose}>取消</Button>
+                <Button type="submit">選擇</Button>
+            </DialogActions>
+        </Dialog>
+    );
+}
+
+
+function EditToolbar(props) {
+
+    const { addPasswordOpen, setAddPasswordOpen, deletePasswordOpen, setDeletePasswordOpen, refreshAllPasswords, rowSelectionModel } = props;
+    const [showPassword, setShowPassword] = React.useState(false);
+    const [urlList, setUrlList] = React.useState([]);
+    const [generatePasswordOpen, setGeneratePasswordOpen] = React.useState(false);
+    const type = "add";
+    const setPasswordFunction = null;
+
+    const handleAddPasswordClose = () => {
+        setAddPasswordOpen(false);
+        setUrlList([]);
+        setShowPassword(false);
+    };
+
+    const handleDeletePasswordClose = () => {
+        setDeletePasswordOpen(false);
+    };
+
+    const handleClickAddPassword = () => {
+        setAddPasswordOpen(true);
+    };
+
+    const handleClickDeletePassword = () => {
+        setDeletePasswordOpen(true);
+    };
+
+    const handleClickGeneratePassword = () => {
+        setGeneratePasswordOpen(true);
+    };
+
+    const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+    const handleAddNewUrl = () => {
+        if (urlList.length !== 0) {
+            setUrlList([...urlList, { id: urlList[urlList.length - 1]['id'] + 1, value: '' }]);
+        } else {
+            setUrlList([...urlList, { id: urlList.length + 1, value: '' }]);
+        }
+    }
+
+    const handleRemoveUrl = (id) => {
+        setUrlList(urlList.filter((url) => url['id'] !== id));
+    }
 
     const submitAddPasswordData = async (formJson) => {
         const token = Cookies.get('token');
@@ -248,14 +327,6 @@ function EditToolbar(props) {
                 }
             );
     }
-
-    React.useEffect(() => {
-        generatePassword();
-    }, [charSetState]);
-
-    React.useEffect(() => {
-        generatePassword();
-    }, [passwordLength]);
 
     return (
         <React.Fragment>
@@ -452,61 +523,7 @@ function EditToolbar(props) {
                     <Button type="submit">刪除</Button>
                 </DialogActions>
             </Dialog>
-            <Dialog
-                open={generatePasswordOpen}
-                aria-labelledby="generate-password-alert-dialog-title"
-                aria-describedby="generate-password-alert-dialog-description"
-                fullWidth
-                PaperProps={{
-                    component: 'form',
-                    onSubmit: (event) => {
-                        event.preventDefault();
-                        handleGeneratePassword();
-                    },
-                }}
-            >
-                <DialogTitle id="generate-password-alert-dialog-title">
-                    產生密碼
-                </DialogTitle>
-                <DialogContent sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                }}>
-                    <Typography variant="p" component="p" style={{ wordWrap: "break-word" }}>
-                        {password}
-                    </Typography>
-                    <FormControl>
-                        <FormLabel htmlFor="passwordLength">密碼長度</FormLabel>
-                        <Slider
-                            marks={passwordLengthMarks}
-                            aria-label="Password Length"
-                            value={passwordLength}
-                            valueLabelDisplay="auto"
-                            min={PASSWORD_LENGTH_MIN}
-                            max={PASSWORD_LENGTH_MAX}
-                            onChange={handlePasswordLengthChange}
-                        />
-                    </FormControl>
-                    <FormControl error={charSetError}>
-                        <FormGroup>
-                            <FormControlLabel control={<Checkbox checked={isUpperCase} name="isUpperCase"
-                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="大寫字母(A-Z)" />
-                            <FormControlLabel control={<Checkbox checked={isLowerCase} name="isLowerCase"
-                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="小寫字母(a-z)" />
-                            <FormControlLabel control={<Checkbox checked={isNumber} name="isNumber"
-                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="數字(0-9)" />
-                            <FormControlLabel control={<Checkbox checked={isSpecialChar} name="isSpecialChar"
-                                onChange={handleCharSetChange} inputProps={{ 'aria-label': 'controlled' }} />} label="特殊字元(!@#$%^*)" />
-                        </FormGroup>
-                        <FormHelperText>{charSetErrorMessage}</FormHelperText>
-                    </FormControl>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleGeneratePasswordClose}>取消</Button>
-                    <Button type="submit">選擇</Button>
-                </DialogActions>
-            </Dialog>
+            <GeneratePassword {...{ type, generatePasswordOpen, setGeneratePasswordOpen, setPasswordFunction }} />
         </React.Fragment >
     );
 }
@@ -562,6 +579,9 @@ export default function Passwords() {
     const paginationModel = { page: 0, pageSize: 10 };
     const [progress, setProgress] = React.useState(10);
     const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
+    const [generatePasswordOpen, setGeneratePasswordOpen] = React.useState(false);
+    const type = "edit";
+    const setPasswordFunction = setPassword;
 
     const handleModalOpen = async (id, type) => {
         getPasswordDetails(id);
@@ -609,6 +629,10 @@ export default function Passwords() {
     }
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+    const handleClickGeneratePassword = () => {
+        setGeneratePasswordOpen(true);
+    };
 
     const refreshAllPasswords = async () => {
         const token = Cookies.get('token');
@@ -1042,6 +1066,13 @@ export default function Passwords() {
                                     >
                                         {showPassword ? <VisibilityOff /> : <Visibility />}
                                     </IconButton>
+                                    <IconButton
+                                        aria-label="open generate passwword"
+                                        onClick={handleClickGeneratePassword}
+                                        edge="end"
+                                    >
+                                        <RefreshIcon />
+                                    </IconButton>
                                 </InputAdornment>,
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -1367,6 +1398,7 @@ export default function Passwords() {
                     )}
                 </DialogContent>
             </Dialog>
+            <GeneratePassword {...{ type, generatePasswordOpen, setGeneratePasswordOpen, setPasswordFunction }} />
         </Box>
     )
 }
