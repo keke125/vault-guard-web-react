@@ -2,6 +2,7 @@
 
 import { Stack, Typography, Box, FormControl, FormLabel } from '@mui/material';
 import { TextField, Button } from '@mui/material';
+import { Alert, Snackbar } from '@mui/material';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import * as React from 'react';
@@ -52,6 +53,8 @@ export default function ResetPassword() {
 
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+    const [alert, setAlert] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState('');
 
     const validateEmail = (email) => {
         return String(email)
@@ -99,13 +102,15 @@ export default function ResetPassword() {
                 }
             }).then(
                 (response) => {
-                    alert(response["message"]);
+                    setAlert(true);
+                    setAlertMessage(response["message"]);
                     resetPasswordStatus = true;
                 }
             ).catch(
                 (error) => {
                     if (error.message) {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -185,6 +190,29 @@ export default function ResetPassword() {
                     </Button>
                 </Box>
             </Card>
+            {alert ?
+                <Snackbar
+                    open={alert}
+                    autoHideDuration={6000}
+                    onClose={() => { setAlert(false); setAlertMessage(''); }}
+                >{
+                        alertMessage.includes("!") ? <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="warning"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert> : <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert>
+                    }
+                </Snackbar> : <></>}
         </ResetPasswordContainer>
     )
 }
