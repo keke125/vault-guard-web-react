@@ -20,6 +20,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Visibility, VisibilityOff, AccountCircle } from '@mui/icons-material';
+import { Alert, Snackbar } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
@@ -242,6 +243,8 @@ function EditToolbar(props) {
     const [showPassword, setShowPassword] = React.useState(false);
     const [urlList, setUrlList] = React.useState([]);
     const [generatePasswordOpen, setGeneratePasswordOpen] = React.useState(false);
+    const [alert, setAlert] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState('');
     const type = "add";
     const setPasswordFunction = null;
 
@@ -284,7 +287,8 @@ function EditToolbar(props) {
     const submitAddPasswordData = async (formJson) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
@@ -309,15 +313,18 @@ function EditToolbar(props) {
             })
             .then(
                 () => {
-                    alert("新增成功");
+                    setAlert(true);
+                    setAlertMessage("新增成功");
                 }
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     } else {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -326,7 +333,8 @@ function EditToolbar(props) {
     const submitDeletePasswordData = async () => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         await fetch('http://localhost:8080/api/v1/password/delete-passwords', {
@@ -352,15 +360,18 @@ function EditToolbar(props) {
             })
             .then(
                 (response) => {
-                    alert(`刪除成功: ${response["successCnt"]}個\n刪除失敗: ${response["failedCnt"]}個`);
+                    setAlert(true);
+                    setAlertMessage(`刪除成功: ${response["successCnt"]}個\n刪除失敗: ${response["failedCnt"]}個`);
                 }
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     } else {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -562,6 +573,29 @@ function EditToolbar(props) {
                 </DialogActions>
             </Dialog>
             <GeneratePassword {...{ type, generatePasswordOpen, setGeneratePasswordOpen, setPasswordFunction }} />
+            {alert ?
+                <Snackbar
+                    open={alert}
+                    autoHideDuration={6000}
+                    onClose={() => { setAlert(false); setAlertMessage(''); }}
+                >{
+                        alertMessage.includes("!") ? <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="warning"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert> : <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert>
+                    }
+                </Snackbar> : <></>}
         </React.Fragment >
     );
 }
@@ -618,6 +652,8 @@ export default function Passwords() {
     const [progress, setProgress] = React.useState(10);
     const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
     const [generatePasswordOpen, setGeneratePasswordOpen] = React.useState(false);
+    const [alert, setAlert] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState('');
     const type = "edit";
     const setPasswordFunction = setPassword;
 
@@ -675,7 +711,8 @@ export default function Passwords() {
     const refreshAllPasswords = async () => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         const url = new URL('http://localhost:8080/api/v1/password/passwords');
@@ -703,10 +740,12 @@ export default function Passwords() {
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     } else {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -730,7 +769,8 @@ export default function Passwords() {
     const getPasswordDetails = async (id) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         await fetch(`http://localhost:8080/api/v1/password/password/${id}`, {
@@ -774,10 +814,12 @@ export default function Passwords() {
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     } else {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -799,7 +841,8 @@ export default function Passwords() {
     const handleDeleteClick = async (id) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
@@ -824,16 +867,19 @@ export default function Passwords() {
             })
             .then(
                 () => {
-                    alert("刪除成功");
+                    setAlert(true);
+                    setAlertMessage("刪除成功");
                     setDeleteConfirmOpen(false);
                 }
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     } else {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -851,7 +897,8 @@ export default function Passwords() {
     const submitData = async (formJson) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         await fetch('http://localhost:8080/api/v1/password/password', {
@@ -876,15 +923,18 @@ export default function Passwords() {
             })
             .then(
                 () => {
-                    alert("更新成功");
+                    setAlert(true);
+                    setAlertMessage("更新成功");
                 }
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     } else {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -1437,6 +1487,29 @@ export default function Passwords() {
                 </DialogContent>
             </Dialog>
             <GeneratePassword {...{ type, generatePasswordOpen, setGeneratePasswordOpen, setPasswordFunction }} />
+            {alert ?
+                <Snackbar
+                    open={alert}
+                    autoHideDuration={6000}
+                    onClose={() => { setAlert(false); setAlertMessage(''); }}
+                >{
+                        alertMessage.includes("!") ? <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="warning"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert> : <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            {alertMessage}
+                        </Alert>
+                    }
+                </Snackbar> : <></>}
         </Box>
     )
 }
