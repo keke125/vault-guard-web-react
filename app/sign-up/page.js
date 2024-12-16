@@ -135,7 +135,7 @@ export default function SignUp() {
 
     const submitData = async (username, password, email) => {
         let signUpStatus = false;
-        await fetch('http://localhost:8080/api/v1/auth/sign-up', {
+        await fetch('/api/v1/auth/sign-up', {
             method: 'POST',
             body: JSON.stringify({
                 username: username,

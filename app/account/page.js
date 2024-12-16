@@ -121,7 +121,7 @@ export default function Account() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in");
         }
-        const url = new URL('http://localhost:8080/api/v1/account/user');
+        const url = new URL('/api/v1/account/user', window.location.origin);
         const params = new URLSearchParams({ type: "password" });
         url.search = params;
         await fetch(url, {
@@ -218,7 +218,7 @@ export default function Account() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        const url = new URL('http://localhost:8080/api/v1/account/user');
+        const url = new URL('/api/v1/account/user', window.location.origin);
         const params = new URLSearchParams({ type: "email" });
         url.search = params;
         await fetch(url, {

@@ -88,7 +88,7 @@ export default function Vault() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        const url = new URL('http://localhost:8080/api/v1/password/passwords');
+        const url = new URL('/api/v1/password/passwords', window.location.origin);
         const params = new URLSearchParams({ type: "file" });
         url.search = params;
         await fetch(url, {
@@ -160,7 +160,7 @@ export default function Vault() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        const url = new URL('http://localhost:8080/api/v1/password/passwords');
+        const url = new URL('/api/v1/password/passwords', window.location.origin);
         const params = new URLSearchParams({ type: importType });
         url.search = params;
         let formData = new FormData();
@@ -217,7 +217,7 @@ export default function Vault() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        const url = new URL('http://localhost:8080/api/v1/password/vault');
+        const url = new URL('/api/v1/password/vault', window.location.origin);
         await fetch(url, {
             method: 'DELETE',
             headers: {

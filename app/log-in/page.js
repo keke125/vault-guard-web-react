@@ -93,7 +93,7 @@ export default function LogIn() {
 
   const submitData = async (username, password) => {
     let loginStatus = false;
-    await fetch('http://localhost:8080/api/v1/auth/log-in', {
+    await fetch('/api/v1/auth/log-in', {
       method: 'POST',
       body: JSON.stringify({
         username: username,

@@ -291,7 +291,7 @@ function EditToolbar(props) {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        await fetch('http://localhost:8080/api/v1/password/password', {
+        await fetch('/api/v1/password/password', {
             method: 'POST',
             body: JSON.stringify(
                 formJson
@@ -337,7 +337,7 @@ function EditToolbar(props) {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        await fetch('http://localhost:8080/api/v1/password/delete-passwords', {
+        await fetch('/api/v1/password/delete-passwords', {
             method: 'POST',
             body: JSON.stringify({
                 passwordUidList: rowSelectionModel
@@ -715,7 +715,7 @@ export default function Passwords() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        const url = new URL('http://localhost:8080/api/v1/password/passwords');
+        const url = new URL('/api/v1/password/passwords', window.location.origin);
         const params = new URLSearchParams({ type: "json" });
         url.search = params;
         // fetch data from server
@@ -773,7 +773,7 @@ export default function Passwords() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        await fetch(`http://localhost:8080/api/v1/password/password/${id}`, {
+        await fetch(`/api/v1/password/password/${id}`, {
             method: 'GET',
             headers: {
                 'Content-type': 'application/json',
@@ -845,7 +845,7 @@ export default function Passwords() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        await fetch('http://localhost:8080/api/v1/password/password', {
+        await fetch('/api/v1/password/password', {
             method: 'DELETE',
             body: JSON.stringify({
                 uid: id
@@ -901,7 +901,7 @@ export default function Passwords() {
             setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
-        await fetch('http://localhost:8080/api/v1/password/password', {
+        await fetch('/api/v1/password/password', {
             method: 'PATCH',
             body: JSON.stringify(
                 formJson

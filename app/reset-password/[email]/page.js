@@ -139,7 +139,7 @@ export default function ResetPasswordByEmail() {
 
     const submitData = async (email, newPassword) => {
         let resetPasswordStatus = false;
-        await fetch('http://localhost:8080/api/v1/account/reset', {
+        await fetch('/api/v1/account/reset', {
             method: 'POST',
             body: JSON.stringify({
                 email: email,
