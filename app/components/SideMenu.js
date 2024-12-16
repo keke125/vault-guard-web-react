@@ -33,7 +33,7 @@ export default function SideMenu() {
     }
     const claims = jose.decodeJwt(token);
     setUsername(claims["sub"]);
-  });
+  }, [setUsername]);
 
   return (
     <Drawer

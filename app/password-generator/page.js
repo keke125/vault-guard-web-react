@@ -116,7 +116,7 @@ export default function PasswordGenerator() {
 
     React.useEffect(() => {
         submitData(isUpperCase, isLowerCase, isNumber, isSpecialChar, passwordLength);
-    }, []);
+    }, [isUpperCase, isLowerCase, isNumber, isSpecialChar, passwordLength]);
 
     return (
 

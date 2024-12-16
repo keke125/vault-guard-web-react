@@ -29,7 +29,7 @@ function SideMenuMobile({ open, toggleDrawer }) {
     }
     const claims = jose.decodeJwt(token);
     setUsername(claims["sub"]);
-  });
+  }, []);
 
   return (
     <Drawer

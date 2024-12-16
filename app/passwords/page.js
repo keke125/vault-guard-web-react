@@ -83,7 +83,7 @@ function GeneratePassword({ type, generatePasswordOpen, setGeneratePasswordOpen,
         setPasswordLength(event.target.value);
     };
 
-    const generatePassword = () => {
+    const generatePassword = React.useCallback(() => {
         if (charSetError) {
             return;
         }
@@ -107,7 +107,7 @@ function GeneratePassword({ type, generatePasswordOpen, setGeneratePasswordOpen,
             password += charSet[num % charSet.length];
         }
         setPassword(password);
-    };
+    }, [charSetError, isUpperCase, isLowerCase, isNumber, isSpecialChar, passwordLength, setPassword]);
 
     const handleGeneratePasswordConfirm = () => {
         if (charSetError) {
@@ -131,15 +131,15 @@ function GeneratePassword({ type, generatePasswordOpen, setGeneratePasswordOpen,
         if (generatePasswordOpen) {
             generatePassword();
         }
-    }, [generatePasswordOpen]);
+    }, [generatePasswordOpen, generatePassword]);
 
     React.useEffect(() => {
         generatePassword();
-    }, [charSetState]);
+    }, [charSetState, generatePassword]);
 
     React.useEffect(() => {
         generatePassword();
-    }, [passwordLength]);
+    }, [passwordLength, generatePassword]);
 
     return (
         <React.Fragment>
@@ -950,6 +950,7 @@ export default function Passwords() {
             cellClassName: 'viewAction',
             getActions: ({ id }) => [
                 <GridActionsCellItem
+                    key={id}
                     icon={<Visibility />}
                     label="檢視"
                     onClick={() => handleModalOpen(id, "view")}
@@ -964,12 +965,14 @@ export default function Passwords() {
             cellClassName: 'editAndRemoveAction',
             getActions: ({ id }) => [
                 <GridActionsCellItem
+                    key={id}
                     icon={<EditIcon />}
                     label="編輯"
                     onClick={() => handleModalOpen(id, "edit")}
                     color="inherit"
                 />,
                 <GridActionsCellItem
+                    key={id}
                     icon={<DeleteIcon />}
                     label="刪除"
                     onClick={() => handleDeleteConfirmOpen(id)}

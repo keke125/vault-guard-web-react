@@ -22,7 +22,7 @@ const secondaryListItems = [
 ];
 
 export default function MenuContent() {
-  const links = ['/passwords', '/password-generator', '/vault', '/account'];
+  const links = React.useMemo(() => ['/passwords', '/password-generator', '/vault', '/account'], []);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   React.useEffect(() => {
@@ -30,7 +30,7 @@ export default function MenuContent() {
     if (links.includes(pathname)) {
       setSelectedIndex(links.indexOf(pathname));
     }
-  });
+  }, [links, setSelectedIndex]);
 
   const handleListItemClick = (index) => {
     setSelectedIndex(index);

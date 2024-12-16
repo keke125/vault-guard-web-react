@@ -196,7 +196,7 @@ export default function ResetPasswordByEmail() {
         if (searchParams.get('token')) {
             setToken(searchParams.get('token'));
         }
-    }, []);
+    }, [pathname, searchParams]);
 
     return (
         <ResetPasswordContainer direction="column" justifyContent="space-between">
