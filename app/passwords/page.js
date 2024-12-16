@@ -1497,14 +1497,14 @@ export default function Passwords() {
                             onClose={() => { setAlert(false); setAlertMessage(''); }}
                             severity="warning"
                             variant="filled"
-                            sx={{ width: '100%' }}
+                            sx={{ width: '100%', whiteSpace: 'pre-line' }}
                         >
                             {alertMessage}
                         </Alert> : <Alert
                             onClose={() => { setAlert(false); setAlertMessage(''); }}
                             severity="success"
                             variant="filled"
-                            sx={{ width: '100%' }}
+                            sx={{ width: '100%', whiteSpace: 'pre-line' }}
                         >
                             {alertMessage}
                         </Alert>

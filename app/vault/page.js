@@ -3,6 +3,7 @@
 import { Stack, Box, Tab, Typography, TextField, InputAdornment, IconButton, Button, InputLabel, Select, MenuItem, FormControl } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Alert, Snackbar } from '@mui/material';
 import PasswordIcon from '@mui/icons-material/Password';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AppNavbar from '../components/AppNavbar';
@@ -35,6 +36,8 @@ export default function Vault() {
     const [acceptFileType, setAcceptFileType] = React.useState("text/csv,text/comma-separated-values,.csv");
     const [uploadFileLabel, setUploadFileLabel] = React.useState("尚未上傳檔案");
     const [uploadFile, setUploadFile] = React.useState(null);
+    const [alert, setAlert] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState('');
 
     const exportVaultFormRef = React.createRef();
     const clearVaultFormRef = React.createRef();
@@ -81,7 +84,8 @@ export default function Vault() {
         }
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         const url = new URL('http://localhost:8080/api/v1/password/passwords');
@@ -111,7 +115,8 @@ export default function Vault() {
             })
             .then(
                 (blob) => {
-                    alert("匯出成功");
+                    setAlert(true);
+                    setAlertMessage("匯出成功");
                     let url = window.URL.createObjectURL(blob);
                     let link = document.createElement('a');
                     let fileName = "vaultguard-" + moment.tz(moment.tz.guess()).format("YYYYMMDDHHmmss") + "-export.json";
@@ -126,11 +131,13 @@ export default function Vault() {
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     }
                     else if (error.message) {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -143,12 +150,14 @@ export default function Vault() {
 
     const importVault = async () => {
         if (uploadFile === null) {
-            alert("請上傳檔案!");
+            setAlert(true);
+            setAlertMessage("請上傳檔案!");
             return;
         }
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         const url = new URL('http://localhost:8080/api/v1/password/passwords');
@@ -176,15 +185,18 @@ export default function Vault() {
             })
             .then(
                 (response) => {
-                    alert(`匯入成功: ${response["successCnt"]}個\n匯入失敗: ${response["failedCnt"]}個`);
+                    setAlert(true);
+                    setAlertMessage(`匯入成功: ${response["successCnt"]}個\n匯入失敗: ${response["failedCnt"]}個`);
                 }
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     } else {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -201,7 +213,8 @@ export default function Vault() {
         }
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
-            alert("身分驗證失敗，請重新登入!");
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
             redirect("/log-in", "push");
         }
         const url = new URL('http://localhost:8080/api/v1/password/vault');
@@ -229,17 +242,20 @@ export default function Vault() {
             })
             .then(
                 (response) => {
-                    alert(response["message"]);
+                    setAlert(true);
+                    setAlertMessage(response["message"]);
                     setMainPassword("");
                 }
             ).catch(
                 (error) => {
                     if (error.message === 'Failed to fetch') {
-                        alert("身分驗證失敗，請重新登入!");
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
                         redirect("/log-in", "push");
                     }
                     else if (error.message) {
-                        alert(error.message);
+                        setAlert(true);
+                        setAlertMessage(error.message);
                     }
                 }
             );
@@ -434,6 +450,29 @@ export default function Vault() {
                     </Box>
                 </Stack>
             </Box >
+            {alert ?
+                <Snackbar
+                    open={alert}
+                    autoHideDuration={6000}
+                    onClose={() => { setAlert(false); setAlertMessage(''); }}
+                >{
+                        alertMessage.includes("!") ? <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="warning"
+                            variant="filled"
+                            sx={{ width: '100%', whiteSpace: 'pre-line' }}
+                        >
+                            {alertMessage}
+                        </Alert> : <Alert
+                            onClose={() => { setAlert(false); setAlertMessage(''); }}
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%', whiteSpace: 'pre-line' }}
+                        >
+                            {alertMessage}
+                        </Alert>
+                    }
+                </Snackbar> : <></>}
         </Box >
     )
 }
