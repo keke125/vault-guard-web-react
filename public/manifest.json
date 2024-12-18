@@ -1,0 +1,28 @@
+{
+    "theme_color": "#1774d1",
+    "background_color": "#ffffff",
+    "icons": [
+        {
+            "purpose": "maskable",
+            "sizes": "512x512",
+            "src": "/icon512_maskable.png",
+            "type": "image/png"
+        },
+        {
+            "purpose": "any",
+            "sizes": "512x512",
+            "src": "/icon512_rounded.png",
+            "type": "image/png"
+        }
+    ],
+    "orientation": "any",
+    "display": "standalone",
+    "dir": "auto",
+    "lang": "zh-TW",
+    "start_url": "https://vault.keke125.com/passwords",
+    "scope": "https://vault.keke125.com",
+    "id": "vault.keke125.com",
+    "name": "Vault Guard Web",
+    "short_name": "Vault Guard",
+    "description": "Vault Guard Web - 您的密碼管理器"
+}
