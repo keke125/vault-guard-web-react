@@ -648,7 +648,7 @@ export default function Passwords() {
     const [createdDateTime, setCreatedDateTime] = React.useState("");
     const [lastModifiedDateTime, setLastModifiedDateTime] = React.useState("");
     const [showPassword, setShowPassword] = React.useState(false);
-    const paginationModel = { page: 0, pageSize: 10 };
+    const paginationModel = { page: 0, pageSize: 25 };
     const [progress, setProgress] = React.useState(10);
     const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
     const [generatePasswordOpen, setGeneratePasswordOpen] = React.useState(false);
@@ -1068,7 +1068,7 @@ export default function Passwords() {
                             rows={rows}
                             columns={columns}
                             initialState={{ pagination: { paginationModel } }}
-                            pageSizeOptions={[5, 10]}
+                            pageSizeOptions={[25, 50, 100, { value: -1, label: '全部' }]}
                             checkboxSelection
                             disableRowSelectionOnClick
                             onRowSelectionModelChange={(newRowSelectionModel) => {
