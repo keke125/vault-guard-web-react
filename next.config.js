@@ -19,6 +19,17 @@ const nextConfig = {
     ]
   },
   */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'favicone.com',
+        port: '',
+        pathname: '/**',
+        search: '?s=256',
+      },
+    ],
+  },
   output: "standalone",
 }
 

@@ -33,6 +33,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import 'moment/locale/zh-tw';
 import { TOTP } from "totp-generator";
 import { redirect } from 'next/navigation';
+import Image from 'next/image';
 
 function GeneratePassword({ type, generatePasswordOpen, setGeneratePasswordOpen, setPasswordFunction }) {
     const [password, setPassword] = React.useState('');
@@ -945,7 +946,7 @@ export default function Passwords() {
             field: 'icon',
             headerName: '圖示',
             renderCell: RenderIcon,
-            width: 60
+            width: 70
         },
         {
             field: 'name',
@@ -994,6 +995,30 @@ export default function Passwords() {
         }
     ];
 
+    const fallbackImage = "/fallback.webp";
+
+    const ImageWithFallback = ({
+        fallback = fallbackImage,
+        alt,
+        src,
+        ...props
+    }) => {
+        const [error, setError] = React.useState(null)
+
+        React.useEffect(() => {
+            setError(null)
+        }, [src])
+
+        return (
+            <Image
+                alt={alt}
+                onError={setError}
+                src={error ? fallbackImage : src}
+                {...props}
+            />
+        )
+    }
+
     function RenderIcon(props) {
         const { row } = props;
         const [domain, setDomain] = React.useState('');
@@ -1010,11 +1035,12 @@ export default function Passwords() {
         return (
             <Box sx={{ position: 'relative', display: 'inline-block' }}>
                 {domain &&
-                    <img
-                        src={`https://favicone.com/${domain}?s=64`}
-                        width="100%"
-                        height="100%">
-                    </img>
+                    <ImageWithFallback
+                        src={`https://favicone.com/${domain}?s=256`}
+                        width={100}
+                        height={100}
+                        alt=""
+                    />
                 }
             </Box>
         );
