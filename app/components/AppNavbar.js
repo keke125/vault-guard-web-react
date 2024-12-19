@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import MuiToolbar from '@mui/material/Toolbar';
 import { tabsClasses } from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import SideMenuMobile from './SideMenuMobile';
@@ -60,7 +61,13 @@ export default function AppNavbar() {
           }}
         >
           <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
-            <Typography variant="h4" component="h1" sx={{ color: 'text.primary' }}>
+            <Typography
+              variant="h4"
+              noWrap
+              component={Link}
+              href="/"
+              sx={{ color: 'text.primary', textDecoration: 'none' }}
+            >
               Vault Guard Web
             </Typography>
           </Stack>
