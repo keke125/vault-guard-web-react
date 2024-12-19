@@ -941,8 +941,20 @@ export default function Passwords() {
     }
 
     const columns = [
-        { field: 'name', headerName: '名稱' },
-        { field: 'username', headerName: '帳號' },
+        {
+            field: 'icon',
+            headerName: '圖示',
+            renderCell: RenderIcon,
+            width: 60
+        },
+        {
+            field: 'name',
+            headerName: '名稱',
+        },
+        {
+            field: 'username',
+            headerName: '帳號'
+        },
         {
             field: 'viewAction',
             type: 'actions',
@@ -981,6 +993,32 @@ export default function Passwords() {
             ],
         }
     ];
+
+    function RenderIcon(props) {
+        const { row } = props;
+        const [domain, setDomain] = React.useState('');
+
+        React.useLayoutEffect(() => {
+            if (row.urlList[0]) {
+                if (URL.canParse(row.urlList[0])) {
+                    const url = new URL(row.urlList[0]);
+                    setDomain(url.hostname);
+                }
+            }
+        }, [row]);
+
+        return (
+            <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                {domain &&
+                    <img
+                        src={`https://favicone.com/${domain}?s=64`}
+                        width="100%"
+                        height="100%">
+                    </img>
+                }
+            </Box>
+        );
+    }
 
     React.useEffect(() => {
         refreshAllPasswords();
