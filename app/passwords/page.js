@@ -655,6 +655,15 @@ export default function Passwords() {
     const [generatePasswordOpen, setGeneratePasswordOpen] = React.useState(false);
     const [alert, setAlert] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState('');
+    const [columnVisibilityModel, setColumnVisibilityModel] = React.useState({
+        lastModifiedDateTime: false
+    });
+    const [sortModel, setSortModel] = React.useState([
+        {
+            field: 'lastModifiedDateTime',
+            sort: 'asc',
+        },
+    ]);
     const type = "edit";
     const setPasswordFunction = setPassword;
 
@@ -946,11 +955,12 @@ export default function Passwords() {
             field: 'icon',
             headerName: '圖示',
             renderCell: RenderIcon,
-            width: 70
+            width: 70,
+            sortable: false
         },
         {
             field: 'name',
-            headerName: '名稱',
+            headerName: '名稱'
         },
         {
             field: 'username',
@@ -970,6 +980,7 @@ export default function Passwords() {
                     color="inherit"
                 />,
             ],
+            sortable: false
         },
         {
             field: 'editAndRemoveAction',
@@ -992,7 +1003,30 @@ export default function Passwords() {
                     color="inherit"
                 />
             ],
-        }
+            sortable: false
+        },
+        {
+            field: 'createdDateTime',
+            headerName: '新增時間',
+            type: 'dateTime',
+            valueGetter: (value) => {
+                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmSS");
+                // Convert the moment object to date object
+                return lastModifiedDateTime.toDate();
+            },
+            width: 190,
+        },
+        {
+            field: 'lastModifiedDateTime',
+            headerName: '上次更新時間',
+            type: 'dateTime',
+            valueGetter: (value) => {
+                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmSS");
+                // Convert the moment object to date object
+                return lastModifiedDateTime.toDate();
+            },
+            width: 190,
+        },
     ];
 
     const fallbackImage = "/fallback.webp";
@@ -1094,6 +1128,12 @@ export default function Passwords() {
                             rows={rows}
                             columns={columns}
                             initialState={{ pagination: { paginationModel } }}
+                            columnVisibilityModel={columnVisibilityModel}
+                            onColumnVisibilityModelChange={(newModel) =>
+                                setColumnVisibilityModel(newModel)
+                            }
+                            sortModel={sortModel}
+                            onSortModelChange={(newSortModel) => setSortModel(newSortModel)}
                             pageSizeOptions={[25, 50, 100, { value: -1, label: '全部' }]}
                             checkboxSelection
                             disableRowSelectionOnClick
