@@ -5,6 +5,7 @@ import Divider from '@mui/material/Divider';
 import Drawer, { drawerClasses } from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 
 import MenuContent from './MenuContent';
@@ -16,6 +17,7 @@ import { redirect } from 'next/navigation';
 function SideMenuMobile({ open, toggleDrawer }) {
 
   const [username, setUsername] = React.useState("");
+  const [email, setEmail] = React.useState("");
 
   const Logout = () => {
     Cookies.remove('token');
@@ -29,7 +31,27 @@ function SideMenuMobile({ open, toggleDrawer }) {
     }
     const claims = jose.decodeJwt(token);
     setUsername(claims["sub"]);
-  }, []);
+    async function fetchData() {
+      await fetch('/api/v1/account/email', {
+        method: 'GET',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.text();
+          }
+        })
+        .then(
+          (response) => {
+            setEmail(response);
+          }
+        );
+    }
+    fetchData();
+  }, [setUsername, setEmail]);
 
   return (
     <Drawer
@@ -54,9 +76,14 @@ function SideMenuMobile({ open, toggleDrawer }) {
             direction="row"
             sx={{ gap: 1, alignItems: 'center', flexGrow: 1, p: 1 }}
           >
-            <Typography component="p" variant="h6">
-              {username}
-            </Typography>
+            <Box sx={{ mr: 'auto' }}>
+              <Typography variant="h6">
+                {username}
+              </Typography>
+              <Typography variant="h7">
+                {email}
+              </Typography>
+            </Box>
           </Stack>
         </Stack>
         <Divider />

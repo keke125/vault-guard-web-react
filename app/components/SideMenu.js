@@ -25,6 +25,7 @@ const Drawer = styled(MuiDrawer)({
 export default function SideMenu() {
 
   const [username, setUsername] = React.useState("");
+  const [email, setEmail] = React.useState("");
 
   React.useEffect(() => {
     const token = Cookies.get('token');
@@ -33,7 +34,27 @@ export default function SideMenu() {
     }
     const claims = jose.decodeJwt(token);
     setUsername(claims["sub"]);
-  }, [setUsername]);
+    async function fetchData() {
+      await fetch('/api/v1/account/email', {
+        method: 'GET',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.text();
+          }
+        })
+        .then(
+          (response) => {
+            setEmail(response);
+          }
+        );
+    }
+    fetchData();
+  }, [setUsername, setEmail]);
 
   return (
     <Drawer
@@ -59,6 +80,9 @@ export default function SideMenu() {
         <Box sx={{ mr: 'auto' }}>
           <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
             {username}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {email}
           </Typography>
         </Box>
         <OptionsMenu />
