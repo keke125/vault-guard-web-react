@@ -16,27 +16,27 @@
     "@mui/lab": "^6.0.0-beta.15",
     "@mui/material": "^6.1.5",
     "@mui/material-nextjs": "^6.1.5",
-    "@mui/x-data-grid": "^7.22.0",
-    "@mui/x-date-pickers": "^7.22.2",
+    "@mui/x-data-grid": "^7.23.3",
+    "@mui/x-date-pickers": "^7.23.3",
     "install": "^0.13.0",
     "jose": "^5.9.6",
     "js-cookie": "^3.0.5",
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.46",
-    "next": "15.0.1",
+    "next": "15.1.2",
     "next-pwa": "^5.6.0",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "totp-generator": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "22.8.1",
-    "@types/react": "18.3.12",
+    "@types/node": "22.10.2",
+    "@types/react": "19.0.2",
     "eslint": "^9.13.0",
-    "eslint-config-next": "15.0.1",
+    "eslint-config-next": "15.1.2",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "5.6.3"
+    "typescript": "5.7.2"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
