@@ -656,7 +656,7 @@ export default function Passwords() {
     const [alert, setAlert] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState('');
     const [columnVisibilityModel, setColumnVisibilityModel] = React.useState({
-        lastModifiedDateTime: false
+        createdDateTime: false
     });
     const [sortModel, setSortModel] = React.useState([
         {
@@ -1010,7 +1010,7 @@ export default function Passwords() {
             headerName: '新增時間',
             type: 'dateTime',
             valueGetter: (value) => {
-                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmSS");
+                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmss");
                 // Convert the moment object to date object
                 return lastModifiedDateTime.toDate();
             },
@@ -1021,7 +1021,7 @@ export default function Passwords() {
             headerName: '上次更新時間',
             type: 'dateTime',
             valueGetter: (value) => {
-                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmSS");
+                const lastModifiedDateTime = moment(value, "YYYYMMDDHHmmss");
                 // Convert the moment object to date object
                 return lastModifiedDateTime.toDate();
             },
@@ -1529,7 +1529,7 @@ export default function Passwords() {
                         <DateTimeField
                             id="createdDateTime"
                             name="createdDateTime"
-                            value={moment.tz(createdDateTime, "YYYYMMDDHHmmSS", "Asia/Taipei").tz(moment.tz.guess())}
+                            value={moment.tz(createdDateTime, "YYYYMMDDHHmmss", "Asia/Taipei").tz(moment.tz.guess())}
                             label="新增時間"
                             fullWidth
                             variant="outlined"
@@ -1539,7 +1539,7 @@ export default function Passwords() {
                         <DateTimeField
                             id="lastModifiedDateTime"
                             name="lastModifiedDateTime"
-                            value={moment.tz(lastModifiedDateTime, "YYYYMMDDHHmmSS", "Asia/Taipei").tz(moment.tz.guess())}
+                            value={moment.tz(lastModifiedDateTime, "YYYYMMDDHHmmss", "Asia/Taipei").tz(moment.tz.guess())}
                             label="上次更新時間"
                             fullWidth
                             variant="outlined"
