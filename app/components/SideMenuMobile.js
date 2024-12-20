@@ -27,10 +27,16 @@ function SideMenuMobile({ open, toggleDrawer }) {
   React.useEffect(() => {
     const token = Cookies.get('token');
     if (token === undefined || token === '') {
-      return;
+      Cookies.remove('token');
+      redirect("/log-in");
     }
-    const claims = jose.decodeJwt(token);
-    setUsername(claims["sub"]);
+    try {
+      const claims = jose.decodeJwt(token);
+      setUsername(claims["sub"]);
+    } catch (error) {
+      Cookies.remove('token');
+      redirect("/log-in", "push");
+    }
     async function fetchData() {
       await fetch('/api/v1/account/email', {
         method: 'GET',
@@ -42,11 +48,18 @@ function SideMenuMobile({ open, toggleDrawer }) {
         .then((response) => {
           if (response.ok) {
             return response.text();
+          } else if (response.status === 403) {
+            throw new Error();
           }
         })
         .then(
           (response) => {
             setEmail(response);
+          }
+        ).catch(
+          () => {
+            Cookies.remove('token');
+            redirect("/log-in", "push");
           }
         );
     }

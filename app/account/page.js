@@ -10,6 +10,7 @@ import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 import * as React from 'react';
 import Cookies from 'js-cookie';
+import { redirect } from 'next/navigation';
 
 export default function Account() {
 
@@ -119,6 +120,7 @@ export default function Account() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in");
         }
         const url = new URL('/api/v1/account/user', window.location.origin);
@@ -145,7 +147,7 @@ export default function Account() {
                         if (response["message"]) {
                             throw new Error(`變更失敗，${response["message"]}`);
                         } else {
-                            throw new Error();
+                            throw new Error('身分驗證失敗，請重新登入!');
                         }
                     })
                 }
@@ -163,9 +165,11 @@ export default function Account() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
+                        redirect("/log-in", "push");
                     } else if (error.message) {
                         setAlert(true);
                         setAlertMessage(error.message);
@@ -216,6 +220,7 @@ export default function Account() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         const url = new URL('/api/v1/account/user', window.location.origin);
@@ -242,7 +247,7 @@ export default function Account() {
                         if (response["message"]) {
                             throw new Error(`修改失敗，${response["message"]}`);
                         } else {
-                            throw new Error();
+                            throw new Error('身分驗證失敗，請重新登入!');
                         }
                     })
                 }
@@ -259,9 +264,11 @@ export default function Account() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
+                        redirect("/log-in", "push");
                     } else if (error.message) {
                         setAlert(true);
                         setAlertMessage(error.message);

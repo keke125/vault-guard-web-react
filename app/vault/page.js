@@ -86,6 +86,7 @@ export default function Vault() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         const url = new URL('/api/v1/password/passwords', window.location.origin);
@@ -108,7 +109,7 @@ export default function Vault() {
                         if (response["message"]) {
                             throw new Error(`匯出失敗，${response["message"]}`);
                         } else {
-                            throw new Error();
+                            throw new Error('身分驗證失敗，請重新登入!');
                         }
                     })
                 }
@@ -130,9 +131,10 @@ export default function Vault() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     }
                     else if (error.message) {
@@ -158,6 +160,7 @@ export default function Vault() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         const url = new URL('/api/v1/password/passwords', window.location.origin);
@@ -180,7 +183,7 @@ export default function Vault() {
                 } else if (response.status === 400) {
                     throw new Error(`匯入失敗!`);
                 } else if (response.status === 403) {
-                    throw new Error();
+                    throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
             .then(
@@ -190,9 +193,10 @@ export default function Vault() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     } else {
                         setAlert(true);
@@ -215,6 +219,7 @@ export default function Vault() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         const url = new URL('/api/v1/password/vault', window.location.origin);
@@ -235,7 +240,7 @@ export default function Vault() {
                         if (response["message"]) {
                             throw new Error(`清空失敗，${response["message"]}`);
                         } else {
-                            throw new Error();
+                            throw new Error('身分驗證失敗，請重新登入!');
                         }
                     })
                 }
@@ -248,9 +253,10 @@ export default function Vault() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     }
                     else if (error.message) {

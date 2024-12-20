@@ -8,6 +8,7 @@ import MenuContent from './MenuContent';
 import OptionsMenu from './OptionsMenu';
 import * as jose from 'jose';
 import Cookies from 'js-cookie';
+import { redirect } from 'next/navigation';
 
 const drawerWidth = 240;
 
@@ -30,10 +31,16 @@ export default function SideMenu() {
   React.useEffect(() => {
     const token = Cookies.get('token');
     if (token === undefined || token === '') {
-      return;
+      Cookies.remove('token');
+      redirect("/log-in");
     }
-    const claims = jose.decodeJwt(token);
-    setUsername(claims["sub"]);
+    try {
+      const claims = jose.decodeJwt(token);
+      setUsername(claims["sub"]);
+    } catch (error) {
+      Cookies.remove('token');
+      redirect("/log-in", "push");
+    }
     async function fetchData() {
       await fetch('/api/v1/account/email', {
         method: 'GET',
@@ -45,11 +52,18 @@ export default function SideMenu() {
         .then((response) => {
           if (response.ok) {
             return response.text();
+          } else if (response.status === 403) {
+            throw new Error();
           }
         })
         .then(
           (response) => {
             setEmail(response);
+          }
+        ).catch(
+          () => {
+            Cookies.remove('token');
+            redirect("/log-in", "push");
           }
         );
     }

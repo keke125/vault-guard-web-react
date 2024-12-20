@@ -290,6 +290,7 @@ function EditToolbar(props) {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         await fetch('/api/v1/password/password', {
@@ -309,7 +310,7 @@ function EditToolbar(props) {
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`新增失敗，${response["message"]}`) });
                 } else if (response.status === 403) {
-                    throw new Error();
+                    throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
             .then(
@@ -319,9 +320,10 @@ function EditToolbar(props) {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     } else {
                         setAlert(true);
@@ -336,6 +338,7 @@ function EditToolbar(props) {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         await fetch('/api/v1/password/delete-passwords', {
@@ -356,7 +359,7 @@ function EditToolbar(props) {
                 } else if (response.status === 400) {
                     throw new Error(`刪除失敗!`);
                 } else if (response.status === 403) {
-                    throw new Error();
+                    throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
             .then(
@@ -366,9 +369,10 @@ function EditToolbar(props) {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     } else {
                         setAlert(true);
@@ -723,6 +727,7 @@ export default function Passwords() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         const url = new URL('/api/v1/password/passwords', window.location.origin);
@@ -740,7 +745,7 @@ export default function Passwords() {
                 if (response.ok) {
                     return response.json();
                 } else if (response.status === 403) {
-                    throw new Error();
+                    throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
             .then(
@@ -749,9 +754,10 @@ export default function Passwords() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     } else {
                         setAlert(true);
@@ -781,6 +787,7 @@ export default function Passwords() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         await fetch(`/api/v1/password/password/${id}`, {
@@ -796,7 +803,7 @@ export default function Passwords() {
                 } else if (response.status === 400 || response.status === 404) {
                     throw new Error(`取得失敗，找不到密碼`);
                 } else if (response.status === 403) {
-                    throw new Error();
+                    throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
             .then(
@@ -823,9 +830,10 @@ export default function Passwords() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     } else {
                         setAlert(true);
@@ -853,6 +861,7 @@ export default function Passwords() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         await fetch('/api/v1/password/password', {
@@ -872,7 +881,7 @@ export default function Passwords() {
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`刪除失敗，${response["message"]}`) });
                 } else if (response.status === 403) {
-                    throw new Error();
+                    throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
             .then(
@@ -883,9 +892,10 @@ export default function Passwords() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     } else {
                         setAlert(true);
@@ -909,6 +919,7 @@ export default function Passwords() {
         if (token === undefined || token === '') {
             setAlert(true);
             setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
             redirect("/log-in", "push");
         }
         await fetch('/api/v1/password/password', {
@@ -928,7 +939,7 @@ export default function Passwords() {
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`更新失敗，${response["message"]}`) });
                 } else if (response.status === 403) {
-                    throw new Error();
+                    throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
             .then(
@@ -938,9 +949,10 @@ export default function Passwords() {
                 }
             ).catch(
                 (error) => {
-                    if (error.message === 'Failed to fetch') {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
                         setAlert(true);
                         setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
                         redirect("/log-in", "push");
                     } else {
                         setAlert(true);
