@@ -317,6 +317,7 @@ function EditToolbar(props) {
                 () => {
                     setAlert(true);
                     setAlertMessage("新增成功");
+                    handleAddPasswordClose();
                 }
             ).catch(
                 (error) => {
@@ -402,7 +403,6 @@ function EditToolbar(props) {
                         const formJson = Object.fromEntries(formData.entries());
                         formJson['urlList'] = urlList.map(item => item.value);
                         submitAddPasswordData(formJson);
-                        handleAddPasswordClose();
                     },
                 }}
             >
@@ -946,6 +946,7 @@ export default function Passwords() {
                 () => {
                     setAlert(true);
                     setAlertMessage("更新成功");
+                    handleModalClose("edit");
                 }
             ).catch(
                 (error) => {
@@ -1198,7 +1199,6 @@ export default function Passwords() {
                         formJson['urlList'] = urlList.map(item => item.value);
                         formJson['uid'] = id;
                         submitData(formJson);
-                        handleModalClose("edit");
                     },
                 }}
             >
