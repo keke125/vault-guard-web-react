@@ -16,11 +16,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html>
+    <html lang="zh-Hant-TW">
       <body
         className={`${notoSansTc.variable}, 'font-sans'`}
       >
-        <CssBaseline enableColorScheme/>
+        <CssBaseline enableColorScheme />
         <ThemeProvider theme={theme}>
           <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
         </ThemeProvider>
