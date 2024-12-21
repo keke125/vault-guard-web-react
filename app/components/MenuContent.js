@@ -12,7 +12,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { redirect } from 'next/navigation';
 
 const mainListItems = [
-  { text: '密碼庫', icon: <EnhancedEncryptionIcon /> },
+  { text: '我的密碼庫', icon: <EnhancedEncryptionIcon /> },
   { text: '密碼產生器', icon: <KeyIcon /> },
 ];
 

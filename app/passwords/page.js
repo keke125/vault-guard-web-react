@@ -412,7 +412,7 @@ function EditToolbar(props) {
                         required
                         id="name"
                         name="name"
-                        label="名稱"
+                        label="名稱(必填)"
                         type="text"
                         fullWidth
                         variant="outlined"
@@ -431,7 +431,7 @@ function EditToolbar(props) {
                         required
                         id="username"
                         name="username"
-                        label="帳號"
+                        label="帳號(必填)"
                         type="text"
                         fullWidth
                         autoComplete="username"
@@ -514,7 +514,7 @@ function EditToolbar(props) {
                     {urlList.map((url) =>
                         <TextField
                             required
-                            label="網址(URL)"
+                            label="網址(URL)(必填)"
                             type="url"
                             fullWidth
                             variant="outlined"
@@ -532,7 +532,7 @@ function EditToolbar(props) {
                                             onClick={() => handleRemoveUrl(url.id)}
                                             edge="end"
                                         >
-                                            <ContentCopyIcon />
+                                            <DeleteOutlineIcon />
                                         </IconButton>
                                     </InputAdornment>,
                                     startAdornment: (
@@ -1212,7 +1212,7 @@ export default function Passwords() {
                         onChange={(event) => {
                             setName(event.target.value);
                         }}
-                        label="名稱"
+                        label="名稱(必填)"
                         type="text"
                         fullWidth
                         variant="outlined"
@@ -1235,7 +1235,7 @@ export default function Passwords() {
                         onChange={(event) => {
                             setUsername(event.target.value);
                         }}
-                        label="帳號"
+                        label="帳號(必填)"
                         type="text"
                         fullWidth
                         autoComplete="username"
@@ -1330,7 +1330,7 @@ export default function Passwords() {
                     {urlList.map((url) =>
                         <TextField
                             required
-                            label="網址(URL)"
+                            label="網址(URL)(必填)"
                             type="url"
                             fullWidth
                             variant="outlined"

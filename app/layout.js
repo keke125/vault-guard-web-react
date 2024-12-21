@@ -10,8 +10,8 @@ const notoSansTc = Noto_Sans_TC({
 });
 
 export const metadata = {
-  title: "Vault Guard Web",
-  description: "Vault Guard Web - Password Manager",
+  title: "Vault Guard Web - 密碼管理器",
+  description: "Vault Guard Web - 密碼管理器",
 };
 
 export default function RootLayout({ children }) {
