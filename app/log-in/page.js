@@ -1,6 +1,6 @@
 "use client"
 
-import { Stack, Typography, Box, FormControl, FormLabel, IconButton } from '@mui/material';
+import { Stack, Typography, Box, FormControl, FormLabel, IconButton, Link } from '@mui/material';
 import { TextField, Button, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Alert, Snackbar } from '@mui/material';
@@ -225,6 +225,28 @@ export default function LogIn() {
             onClick={() => redirect("/reset-password", "push")}
           >
             忘記密碼
+          </Button>
+          <Button
+            fullWidth
+          >
+            <Link
+              href="https://vault.keke125.com/report/project_report.pptx"
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="none"
+            >下載專案報告 (PPT)
+            </Link>
+          </Button>
+          <Button
+            fullWidth
+          >
+            <Link
+              href="https://vault.keke125.com/report/project_report.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="none"
+            >下載專案報告 (PDF)
+            </Link>
           </Button>
         </Box>
       </Card>
