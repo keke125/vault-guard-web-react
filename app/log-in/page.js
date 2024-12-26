@@ -119,7 +119,7 @@ export default function LogIn() {
       ).catch(
         () => {
           setAlert(true);
-          setAlertMessage("登入失敗，請檢查帳號及主密碼是否正確!");
+          setAlertMessage("登入失敗，請先確認是否已啟用帳號，並檢查帳號及主密碼是否正確!");
         }
       );
     if (loginStatus) {
@@ -225,6 +225,12 @@ export default function LogIn() {
             onClick={() => redirect("/reset-password", "push")}
           >
             忘記密碼
+          </Button>
+          <Button
+            fullWidth
+            onClick={() => redirect("/activate-account", "push")}
+          >
+            啟用帳號
           </Button>
           <Button
             fullWidth

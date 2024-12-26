@@ -250,7 +250,7 @@ export default function ResetPasswordByEmail() {
                             type="token"
                             name="token"
                             value={token}
-                            placeholder="請輸入驗證碼"
+                            placeholder="請輸入確認信裡的驗證碼，或直接點擊信中連結"
                             autoComplete="token"
                             autoFocus
                             required
@@ -333,7 +333,7 @@ export default function ResetPasswordByEmail() {
                     <Button
                         fullWidth
                         variant="contained"
-                        onClick={() => redirect("/reset-password", "push")}
+                        onClick={() => redirect(`/reset-password`, "push")}
                     >
                         重新取得確認信
                     </Button>

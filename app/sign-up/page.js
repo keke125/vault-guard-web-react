@@ -158,7 +158,7 @@ export default function SignUp() {
                 () => {
                     signUpStatus = true;
                     setAlert(true);
-                    setAlertMessage("註冊成功，將跳轉至登入頁面");
+                    setAlertMessage("註冊成功，將跳轉至啟用帳號頁面");
                 }
             ).catch(
                 (error) => {
@@ -172,7 +172,7 @@ export default function SignUp() {
                 }
             );
         if (signUpStatus) {
-            redirect("/log-in", "push");
+            redirect(`/activate-account/${email}`, "push");
         }
     }
 
@@ -209,7 +209,7 @@ export default function SignUp() {
                     }}
                 >
                     <FormControl>
-                        <FormLabel htmlFor="username">帳號</FormLabel>
+                        <FormLabel htmlFor="username">帳號(必填)</FormLabel>
                         <TextField
                             error={usernameError}
                             helperText={usernameErrorMessage}
@@ -226,14 +226,14 @@ export default function SignUp() {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="email">電子信箱</FormLabel>
+                        <FormLabel htmlFor="email">電子信箱(必填)</FormLabel>
                         <TextField
                             error={emailError}
                             helperText={emailErrorMessage}
                             id="email"
                             type="email"
                             name="email"
-                            placeholder="請輸入電子信箱"
+                            placeholder="請輸入電子信箱，註冊後系統將寄送確認信"
                             autoComplete="email"
                             autoFocus
                             required
@@ -243,7 +243,7 @@ export default function SignUp() {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="password">主密碼</FormLabel>
+                        <FormLabel htmlFor="password">主密碼(必填)</FormLabel>
                         <TextField
                             error={passwordError}
                             helperText={passwordErrorMessage}
@@ -273,7 +273,7 @@ export default function SignUp() {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="repeatedPassword">確認主密碼</FormLabel>
+                        <FormLabel htmlFor="repeatedPassword">確認主密碼(必填)</FormLabel>
                         <TextField
                             error={repeatedPasswordError}
                             helperText={repeatedPasswordErrorMessage}
@@ -321,6 +321,12 @@ export default function SignUp() {
                         onClick={() => redirect("/reset-password", "push")}
                     >
                         忘記密碼
+                    </Button>
+                    <Button
+                        fullWidth
+                        onClick={() => redirect("/activate-account/", "push")}
+                    >
+                        啟用帳號
                     </Button>
                 </Box>
             </Card>
