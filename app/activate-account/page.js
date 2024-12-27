@@ -54,10 +54,8 @@ export default function ActivateAccount() {
             .then((response) => {
                 if (response.ok) {
                     return response.json();
-                } else if (response.status === 400) {
-                    return response.json().then((response) => { throw new Error(`啟用失敗，${response["message"]}`) });
                 } else {
-                    throw new Error("啟用失敗，請檢查電子信箱是否正確!");
+                    return response.json().then((response) => { throw new Error(`啟用失敗，${response["message"]}`) });
                 }
             }).then(
                 (response) => {

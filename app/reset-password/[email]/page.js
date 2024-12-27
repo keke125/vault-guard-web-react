@@ -139,7 +139,7 @@ export default function ResetPasswordByEmail() {
 
     const submitData = async (email, newPassword) => {
         let resetPasswordStatus = false;
-        await fetch('/api/v1/account/reset', {
+        await fetch('/api/v1/account/reset-password', {
             method: 'POST',
             body: JSON.stringify({
                 email: email,
@@ -153,10 +153,8 @@ export default function ResetPasswordByEmail() {
             .then((response) => {
                 if (response.ok) {
                     return response.json();
-                } else if (response.status === 400) {
-                    return response.json().then((response) => { throw new Error(`重設失敗，${response["message"]}`) });
                 } else {
-                    throw new Error("重設失敗，請檢查電子信箱是否正確!");
+                    return response.json().then((response) => { throw new Error(`重設失敗，${response["message"]}`) });
                 }
             }).then(
                 (response) => {
