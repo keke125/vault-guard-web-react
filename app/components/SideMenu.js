@@ -52,7 +52,7 @@ export default function SideMenu() {
         .then((response) => {
           if (response.ok) {
             return response.text();
-          } else if (response.status === 403) {
+          } else {
             throw new Error();
           }
         })

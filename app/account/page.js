@@ -142,7 +142,7 @@ export default function Account() {
                     return response.json();
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`變更失敗，${response["message"]}`) });
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     return response.json().then((response) => {
                         if (response["message"]) {
                             throw new Error(`變更失敗，${response["message"]}`);
@@ -242,7 +242,7 @@ export default function Account() {
                     return response.json();
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`修改失敗，${response["message"]}`) });
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     return response.json().then((response) => {
                         if (response["message"]) {
                             throw new Error(`修改失敗，${response["message"]}`);

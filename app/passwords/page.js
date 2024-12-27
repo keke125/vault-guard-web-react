@@ -309,7 +309,7 @@ function EditToolbar(props) {
                     return response.json();
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`新增失敗，${response["message"]}`) });
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
@@ -359,7 +359,7 @@ function EditToolbar(props) {
                     return response.json();
                 } else if (response.status === 400) {
                     throw new Error(`刪除失敗!`);
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
@@ -744,7 +744,7 @@ export default function Passwords() {
             .then((response) => {
                 if (response.ok) {
                     return response.json();
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
@@ -802,7 +802,7 @@ export default function Passwords() {
                     return response.json();
                 } else if (response.status === 400 || response.status === 404) {
                     throw new Error(`取得失敗，找不到密碼`);
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
@@ -880,7 +880,7 @@ export default function Passwords() {
                     return response.json();
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`刪除失敗，${response["message"]}`) });
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
@@ -938,7 +938,7 @@ export default function Passwords() {
                     return response.json();
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`更新失敗，${response["message"]}`) });
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     throw new Error('身分驗證失敗，請重新登入!');
                 }
             })

@@ -104,7 +104,7 @@ export default function Vault() {
                     return response.blob();
                 } else if (response.status === 400 || response.status === 404) {
                     throw new Error(`取得失敗，找不到密碼`);
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     return response.json().then((response) => {
                         if (response["message"]) {
                             throw new Error(`匯出失敗，${response["message"]}`);
@@ -182,7 +182,7 @@ export default function Vault() {
                     return response.json();
                 } else if (response.status === 400) {
                     throw new Error(`匯入失敗!`);
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     throw new Error('身分驗證失敗，請重新登入!');
                 }
             })
@@ -235,7 +235,7 @@ export default function Vault() {
                     return response.json();
                 } else if (response.status === 400) {
                     throw new Error(`清空失敗!`);
-                } else if (response.status === 403) {
+                } else if (response.status === 401) {
                     return response.json().then((response) => {
                         if (response["message"]) {
                             throw new Error(`清空失敗，${response["message"]}`);

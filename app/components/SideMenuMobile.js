@@ -48,7 +48,7 @@ function SideMenuMobile({ open, toggleDrawer }) {
         .then((response) => {
           if (response.ok) {
             return response.text();
-          } else if (response.status === 403) {
+          } else {
             throw new Error();
           }
         })
