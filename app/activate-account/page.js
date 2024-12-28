@@ -55,7 +55,7 @@ export default function ActivateAccount() {
                 if (response.ok) {
                     return response.json();
                 } else {
-                    return response.json().then((response) => { throw new Error(`啟用失敗，${response["message"]}`) });
+                    return response.json().then((response) => { throw new Error(`寄送失敗，${response["message"]}`) });
                 }
             }).then(
                 (response) => {

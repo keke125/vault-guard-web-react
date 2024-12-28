@@ -96,7 +96,7 @@ export default function ResetPassword() {
                 if (response.ok) {
                     return response.json();
                 } else {
-                    return response.json().then((response) => { throw new Error(`重設失敗，${response["message"]}`) });
+                    return response.json().then((response) => { throw new Error(`寄送失敗，${response["message"]}`) });
                 }
             }).then(
                 (response) => {
