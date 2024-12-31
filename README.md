@@ -49,6 +49,31 @@ Vault Guard Web 為免費且開放原始碼的網頁應用程式，提供使用�
 
     TOTP（Time-Based One-Time Password）驗證碼是一種基於時間的一次性驗證碼，用於雙因素驗證（2FA）或多因素驗證（MFA）系統，它會根據當前時間產生一個短暫有效的驗證碼，通常是6位或8位數字，並每隔30秒或60秒自動更新，因為有效期較短，相比密碼來說被盜用的損失也較小，因為實作成本較低，常作為一種雙重驗證的方式。
 
+## 主要特色
+
+* 整合TOTP驗證碼
+* 支援RWD
+* 支援PWA
+* 支援從Google密碼管理器匯入密碼
+* 支援匯入匯出密碼庫
+* 方便自架 - 透過 Docker Compose，可一次部署前端、後端、資料庫。
+* 效能 - 在 Google Lighthouse 獲得滿分成績。
+![Google Lighthouse結果](img/img_10.png)
+
+## Demo
+
+[https://vault.keke125.com](https://vault.keke125.com)
+
+由 Vault Guard Web 官方維護，提供使用者 Demo。
+
+測試使用者的資訊為帳號: `vaultguardweb` / 密碼: `vaultguardweb`，你也可以另外註冊使用帳號。
+
+⚠️建議不要在 Demo 網站儲存重要資訊。如果想穩定使用，請自行部署此專案至你的伺服器。
+
+## 透過 Docker 部署
+
+請參考 [https://hub.docker.com/r/keke125/vault-guard-web-react](https://hub.docker.com/r/keke125/vault-guard-web-react)
+
 ## 程式截圖
 
 ![我的密碼庫](img/img.png)
@@ -80,18 +105,3 @@ Vault Guard Web 為免費且開放原始碼的網頁應用程式，提供使用�
 
 ![帳號設定](img/img_9.png)
 帳號設定
-
-## 主要特色
-
-* 整合TOTP驗證碼
-* 支援RWD
-* 支援PWA
-* 支援從Google密碼管理器匯入密碼
-* 支援匯入匯出密碼庫
-* 方便自架 - 透過 Docker Compose，可一次部署前端、後端、資料庫。
-* 效能 - 在 Google Lighthouse 獲得滿分成績。
-![Google Lighthouse結果](img/img_10.png)
-
-## 透過 Docker 部署
-
-請參考 [https://hub.docker.com/r/keke125/vault-guard-web-react](https://hub.docker.com/r/keke125/vault-guard-web-react)
