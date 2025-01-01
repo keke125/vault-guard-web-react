@@ -58,9 +58,9 @@ export default function ResetPasswordByEmail() {
     const [email, setEmail] = React.useState('');
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-    const [token, setToken] = React.useState('');
-    const [tokenError, setTokenError] = React.useState(false);
-    const [tokenErrorMessage, setTokenErrorMessage] = React.useState('');
+    const [verificationCode, setVerificationCode] = React.useState('');
+    const [verificationCodeError, setVerificationCodeError] = React.useState(false);
+    const [verificationCodeErrorMessage, setVerificationCodeErrorMessage] = React.useState('');
     const [newPasswordError, setNewPasswordError] = React.useState(false);
     const [newPasswordErrorMessage, setNewPasswordErrorMessage] = React.useState('');
     const [repeatedNewPasswordError, setRepeatedNewPasswordError] = React.useState(false);
@@ -83,7 +83,7 @@ export default function ResetPasswordByEmail() {
 
     const validateInputs = () => {
         const email = document.getElementById('email');
-        const token = document.getElementById('token');
+        const verificationCode = document.getElementById('verificationCode').value;
         const newPassword = document.getElementById('newPassword');
         const repeatedNewPassword = document.getElementById('repeatedNewPassword');
 
@@ -98,13 +98,13 @@ export default function ResetPasswordByEmail() {
             setEmailErrorMessage('');
         }
 
-        if (!token.value) {
-            setTokenError(true);
-            setTokenErrorMessage('請輸入驗證碼!');
+        if (!verificationCode) {
+            setVerificationCodeError(true);
+            setVerificationCodeErrorMessage('請輸入驗證碼!');
             isValid = false;
         } else {
-            setTokenError(false);
-            setTokenErrorMessage('');
+            setVerificationCodeError(false);
+            setVerificationCodeErrorMessage('');
         }
 
         if (!newPassword.value || !((8 <= newPassword.value.length) && (newPassword.value.length <= 128))) {
@@ -143,7 +143,7 @@ export default function ResetPasswordByEmail() {
             method: 'POST',
             body: JSON.stringify({
                 email: email,
-                token: token,
+                verificationCode: verificationCode,
                 newPassword: newPassword
             }),
             headers: {
@@ -176,7 +176,7 @@ export default function ResetPasswordByEmail() {
     }
 
     const handleSubmit = (event) => {
-        if (emailError | tokenError | newPasswordError | repeatedNewPasswordError) {
+        if (emailError | verificationCodeError | newPasswordError | repeatedNewPasswordError) {
             event.preventDefault();
             return;
         }
@@ -192,7 +192,7 @@ export default function ResetPasswordByEmail() {
             }
         }
         if (searchParams.get('token')) {
-            setToken(searchParams.get('token'));
+            setVerificationCode(searchParams.get('token'));
         }
     }, [pathname, searchParams]);
 
@@ -240,23 +240,22 @@ export default function ResetPasswordByEmail() {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="token">驗證碼</FormLabel>
+                        <FormLabel htmlFor="verificationCode">驗證碼</FormLabel>
                         <TextField
-                            error={tokenError}
-                            helperText={tokenErrorMessage}
-                            id="token"
-                            type="token"
-                            name="token"
-                            value={token}
+                            error={verificationCodeError}
+                            helperText={verificationCodeErrorMessage}
+                            id="verificationCode"
+                            type="text"
+                            name="verificationCode"
+                            value={verificationCode}
                             placeholder="請輸入確認信裡的驗證碼，或直接點擊信中連結"
-                            autoComplete="token"
                             autoFocus
                             required
                             fullWidth
                             variant="outlined"
-                            color={tokenError ? 'error' : 'primary'}
+                            color={verificationCodeError ? 'error' : 'primary'}
                             onChange={(event) => {
-                                setToken(event.target.value);
+                                setVerificationCode(event.target.value);
                             }}
                         />
                     </FormControl>

@@ -16,9 +16,9 @@ export default function ActivateAccountByEmail() {
     const [email, setEmail] = React.useState('');
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-    const [token, setToken] = React.useState('');
-    const [tokenError, setTokenError] = React.useState(false);
-    const [tokenErrorMessage, setTokenErrorMessage] = React.useState('');
+    const [verificationCode, setVerificationCode] = React.useState('');
+    const [verificationCodeError, setVerificationCodeError] = React.useState(false);
+    const [verificationCodeErrorMessage, setVerificationCodeErrorMessage] = React.useState('');
     const [alert, setAlert] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState('');
 
@@ -32,7 +32,7 @@ export default function ActivateAccountByEmail() {
 
     const validateInputs = () => {
         const email = document.getElementById('email');
-        const token = document.getElementById('token');
+        const verificationCode = document.getElementById('verificationCode').value;
 
         let isValid = true;
 
@@ -45,13 +45,13 @@ export default function ActivateAccountByEmail() {
             setEmailErrorMessage('');
         }
 
-        if (!token.value) {
-            setTokenError(true);
-            setTokenErrorMessage('請輸入驗證碼!');
+        if (!verificationCode) {
+            setVerificationCodeError(true);
+            setVerificationCodeErrorMessage('請輸入驗證碼!');
             isValid = false;
         } else {
-            setTokenError(false);
-            setTokenErrorMessage('');
+            setVerificationCodeError(false);
+            setVerificationCodeErrorMessage('');
         }
 
         return isValid;
@@ -63,7 +63,7 @@ export default function ActivateAccountByEmail() {
             method: 'POST',
             body: JSON.stringify({
                 email: email,
-                token: token
+                verificationCode: verificationCode
             }),
             headers: {
                 'Content-type': 'application/json'
@@ -95,7 +95,7 @@ export default function ActivateAccountByEmail() {
     }
 
     const handleSubmit = (event) => {
-        if (emailError | tokenError) {
+        if (emailError | verificationCodeError) {
             event.preventDefault();
             return;
         }
@@ -111,7 +111,7 @@ export default function ActivateAccountByEmail() {
             }
         }
         if (searchParams.get('token')) {
-            setToken(searchParams.get('token'));
+            setVerificationCode(searchParams.get('token'));
         }
     }, [pathname, searchParams]);
 
@@ -159,23 +159,22 @@ export default function ActivateAccountByEmail() {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="token">驗證碼</FormLabel>
+                        <FormLabel htmlFor="verificationCode">驗證碼</FormLabel>
                         <TextField
-                            error={tokenError}
-                            helperText={tokenErrorMessage}
-                            id="token"
-                            type="token"
-                            name="token"
-                            value={token}
+                            error={verificationCodeError}
+                            helperText={verificationCodeErrorMessage}
+                            id="verificationCode"
+                            type="text"
+                            name="verificationCode"
+                            value={verificationCode}
                             placeholder="請輸入確認信裡的驗證碼，或直接點擊信中連結"
-                            autoComplete="token"
                             autoFocus
                             required
                             fullWidth
                             variant="outlined"
-                            color={tokenError ? 'error' : 'primary'}
+                            color={verificationCodeError ? 'error' : 'primary'}
                             onChange={(event) => {
-                                setToken(event.target.value);
+                                setVerificationCode(event.target.value);
                             }}
                         />
                     </FormControl>
