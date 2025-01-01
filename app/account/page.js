@@ -5,6 +5,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { TextField, Button, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Alert, Snackbar } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
@@ -24,10 +25,13 @@ export default function Account() {
     const [showPassword, setShowPassword] = React.useState(false);
     const [showNewPassword, setShowNewPassword] = React.useState(false);
     const [showRepeatedNewPassword, setShowRepeatedNewPassword] = React.useState(false);
-    const [emailError, setEmailError] = React.useState(false);
-    const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+    const [newEmailError, setNewEmailError] = React.useState(false);
+    const [newEmailErrorMessage, setNewEmailErrorMessage] = React.useState('');
+    const [verificationCodeError, setVerificationCodeError] = React.useState(false);
+    const [verificationCodeErrorMessage, setVerificationCodeErrorMessage] = React.useState('');
     const [alert, setAlert] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState('');
+    const [newEmailReadonly, setNewEmailReadonly] = React.useState(false);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
     const handleClickShowNewPassword = () => setShowNewPassword((show) => !show);
@@ -64,8 +68,11 @@ export default function Account() {
     }
 
     const clearChangeEmail = () => {
-        setEmailError(false);
-        setEmailErrorMessage('');
+        setNewEmailError(false);
+        setNewEmailErrorMessage('');
+        setVerificationCodeError(false);
+        setVerificationCodeErrorMessage('');
+        setNewEmailReadonly(false);
         clearPassword();
     }
 
@@ -189,21 +196,31 @@ export default function Account() {
     };
 
     const validateChangeEmailInput = () => {
-        const email = document.getElementById('email');
-        const password = document.getElementById('password');
+        const newEmail = document.getElementById('newEmail').value;
+        const verificationCode = document.getElementById('verificationCode').value;
+        const password = document.getElementById('password').value;
 
         let isValid = true;
 
-        if (!email.value || !validateEmail(email.value)) {
-            setEmailError(true);
-            setEmailErrorMessage('請輸入有效的電子信箱!');
+        if (!newEmail || !validateEmail(newEmail)) {
+            setNewEmailError(true);
+            setNewEmailErrorMessage('請輸入有效的電子信箱!');
             isValid = false;
         } else {
-            setEmailError(false);
-            setEmailErrorMessage('');
+            setNewEmailError(false);
+            setNewEmailErrorMessage('');
         }
 
-        if (!password.value || !((8 <= password.value.length) && (password.value.length <= 128))) {
+        if (!verificationCode) {
+            setVerificationCodeError(true);
+            setVerificationCodeErrorMessage('請輸入驗證碼!');
+            isValid = false;
+        } else {
+            setVerificationCodeError(false);
+            setVerificationCodeErrorMessage('');
+        }
+
+        if (!password || !((8 <= password.length) && (password.length <= 128))) {
             setPasswordError(true);
             setPasswordErrorMessage('主密碼長度必須在8-128字元之間!');
             isValid = false;
@@ -215,7 +232,7 @@ export default function Account() {
         return isValid;
     };
 
-    const submitChangeEmailData = async (email, password) => {
+    const submitChangeEmailData = async (newEmail, password, verificationCode) => {
         const token = Cookies.get('token');
         if (token === undefined || token === '') {
             setAlert(true);
@@ -229,8 +246,9 @@ export default function Account() {
         await fetch(url, {
             method: 'PATCH',
             body: JSON.stringify({
-                email: email,
-                oldPassword: password
+                newEmail: newEmail,
+                oldPassword: password,
+                verificationCode: verificationCode
             }),
             headers: {
                 'Content-type': 'application/json',
@@ -258,9 +276,11 @@ export default function Account() {
                 (response) => {
                     setAlert(true);
                     setAlertMessage(response["message"]);
-                    document.getElementById("email").value = '';
+                    document.getElementById("newEmail").value = '';
                     document.getElementById("password").value = '';
+                    document.getElementById("verificationCode").value = '';
                     clearChangeEmail();
+                    location.reload();
                 }
             ).catch(
                 (error) => {
@@ -278,14 +298,72 @@ export default function Account() {
     }
 
     const handleChangeEmailSubmit = (event) => {
-        if (emailError || passwordError) {
+        if (newEmailError || verificationCodeError || passwordError) {
             event.preventDefault();
             return;
         }
         const data = new FormData(event.currentTarget);
-        submitChangeEmailData(data.get('email'), data.get('password'));
+        submitChangeEmailData(data.get('newEmail'), data.get('password'), data.get('verificationCode'));
         event.preventDefault();
     };
+
+    const sendChangeEmailVerificationCode = async () => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
+            redirect("/log-in", "push");
+        }
+
+        const newEmail = document.getElementById('newEmail').value;
+        if (!validateEmail(newEmail)) {
+            setNewEmailError(true);
+            setNewEmailErrorMessage('請輸入有效的電子信箱!');
+            return;
+        } else {
+            setNewEmailError(false);
+            setNewEmailErrorMessage('');
+        }
+
+        await fetch('/api/v1/account/change-email', {
+            method: 'POST',
+            body: JSON.stringify({
+                newEmail: newEmail
+            }),
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`寄送失敗，${response["message"]}`) });
+                } else if (response.status === 401) {
+                    throw new Error('身分驗證失敗，請重新登入!');
+                }
+            }).then(
+                (response) => {
+                    setAlert(true);
+                    setAlertMessage(response["message"]);
+                    setNewEmailReadonly(true);
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
+                        redirect("/log-in", "push");
+                    } else {
+                        setAlert(true);
+                        setAlertMessage(error.message);
+                    }
+                }
+            );
+    }
 
     return (
 
@@ -461,20 +539,49 @@ export default function Account() {
                                     }}
                                 >
                                     <FormControl>
-                                        <FormLabel htmlFor="email">電子信箱</FormLabel>
+                                        <FormLabel htmlFor="newEmail">電子信箱</FormLabel>
                                         <TextField
-                                            error={emailError}
-                                            helperText={emailErrorMessage}
-                                            id="email"
+                                            error={newEmailError}
+                                            helperText={newEmailErrorMessage}
+                                            id="newEmail"
                                             type="email"
-                                            name="email"
+                                            name="newEmail"
                                             placeholder="請輸入電子信箱"
                                             autoComplete="email"
                                             autoFocus
                                             required
                                             fullWidth
+                                            slotProps={{
+                                                input: {
+                                                    readOnly: newEmailReadonly,
+                                                },
+                                            }}
                                             variant="outlined"
-                                            color={emailError ? 'error' : 'primary'}
+                                            color={newEmailError ? 'error' : 'primary'}
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <Button
+                                            endIcon={<SendIcon />}
+                                            onClick={sendChangeEmailVerificationCode}
+                                        >
+                                            寄送驗證碼
+                                        </Button>
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel htmlFor="verificationCode">驗證碼</FormLabel>
+                                        <TextField
+                                            error={verificationCodeError}
+                                            helperText={verificationCodeErrorMessage}
+                                            id="verificationCode"
+                                            type="text"
+                                            name="verificationCode"
+                                            placeholder="請輸入驗證碼"
+                                            autoFocus
+                                            required
+                                            fullWidth
+                                            variant="outlined"
+                                            color={verificationCodeError ? 'error' : 'primary'}
                                         />
                                     </FormControl>
                                     <FormControl>
@@ -515,35 +622,49 @@ export default function Account() {
                                     >
                                         變更
                                     </Button>
+                                    <Button
+                                        fullWidth
+                                        onClick={() => {
+                                            document.getElementById("newEmail").value = '';
+                                            document.getElementById("password").value = '';
+                                            document.getElementById("verificationCode").value = '';
+                                            clearChangeEmail();
+                                        }
+                                        }
+                                    >
+                                        取消
+                                    </Button>
                                 </Box>
                             </TabPanel>
                         </TabContext>
                     </Box>
                 </Stack>
             </Box >
-            {alert ?
-                <Snackbar
-                    open={alert}
-                    autoHideDuration={6000}
-                    onClose={() => { setAlert(false); setAlertMessage(''); }}
-                >{
-                        alertMessage.includes("!") ? <Alert
-                            onClose={() => { setAlert(false); setAlertMessage(''); }}
-                            severity="warning"
-                            variant="filled"
-                            sx={{ width: '100%' }}
-                        >
-                            {alertMessage}
-                        </Alert> : <Alert
-                            onClose={() => { setAlert(false); setAlertMessage(''); }}
-                            severity="success"
-                            variant="filled"
-                            sx={{ width: '100%' }}
-                        >
-                            {alertMessage}
-                        </Alert>
-                    }
-                </Snackbar> : <></>}
+            {
+                alert ?
+                    <Snackbar
+                        open={alert}
+                        autoHideDuration={6000}
+                        onClose={() => { setAlert(false); setAlertMessage(''); }}
+                    >{
+                            alertMessage.includes("!") ? <Alert
+                                onClose={() => { setAlert(false); setAlertMessage(''); }}
+                                severity="warning"
+                                variant="filled"
+                                sx={{ width: '100%' }}
+                            >
+                                {alertMessage}
+                            </Alert> : <Alert
+                                onClose={() => { setAlert(false); setAlertMessage(''); }}
+                                severity="success"
+                                variant="filled"
+                                sx={{ width: '100%' }}
+                            >
+                                {alertMessage}
+                            </Alert>
+                        }
+                    </Snackbar> : <></>
+            }
         </Box >
     )
 }
