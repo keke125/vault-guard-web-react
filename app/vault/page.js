@@ -344,6 +344,7 @@ export default function Vault() {
                                             type="file"
                                             accept={acceptFileType}
                                             onChange={(event) => handleUploadFileChange(event)}
+                                            onClick={event => event.target.value = null}
                                         />
                                     </Button>
                                     <InputLabel
