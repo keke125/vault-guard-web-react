@@ -10,7 +10,6 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 
 import MenuContent from './MenuContent';
 
-import * as jose from 'jose';
 import Cookies from 'js-cookie';
 import { redirect } from 'next/navigation';
 
@@ -30,14 +29,31 @@ function SideMenuMobile({ open, toggleDrawer }) {
       Cookies.remove('token');
       redirect("/log-in");
     }
-    try {
-      const claims = jose.decodeJwt(token);
-      setUsername(claims["sub"]);
-    } catch (error) {
-      Cookies.remove('token');
-      redirect("/log-in", "push");
-    }
     async function fetchData() {
+      await fetch('/api/v1/account/username', {
+        method: 'GET',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.text();
+          } else {
+            throw new Error();
+          }
+        })
+        .then(
+          (response) => {
+            setUsername(response);
+          }
+        ).catch(
+          () => {
+            Cookies.remove('token');
+            redirect("/log-in", "push");
+          }
+        );
       await fetch('/api/v1/account/email', {
         method: 'GET',
         headers: {
