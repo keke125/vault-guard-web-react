@@ -105,13 +105,16 @@ export default function Vault() {
                 } else if (response.status === 400 || response.status === 404) {
                     throw new Error(`取得失敗，找不到密碼`);
                 } else if (response.status === 401) {
-                    return response.json().then((response) => {
-                        if (response["message"]) {
-                            throw new Error(`匯出失敗，${response["message"]}`);
-                        } else {
-                            throw new Error('身分驗證失敗，請重新登入!');
-                        }
-                    })
+                    return response.text()
+                        .then((response) => {
+                            let data;
+                            try {
+                                data = JSON.parse(response);
+                            } catch (error) {
+                                throw new Error('身分驗證失敗，請重新登入!');
+                            }
+                            throw new Error(`匯出失敗，${data["message"]}`);
+                        });
                 }
             })
             .then(
@@ -236,13 +239,16 @@ export default function Vault() {
                 } else if (response.status === 400) {
                     throw new Error(`清空失敗!`);
                 } else if (response.status === 401) {
-                    return response.json().then((response) => {
-                        if (response["message"]) {
-                            throw new Error(`清空失敗，${response["message"]}`);
-                        } else {
-                            throw new Error('身分驗證失敗，請重新登入!');
-                        }
-                    })
+                    return response.text()
+                        .then((response) => {
+                            let data;
+                            try {
+                                data = JSON.parse(response);
+                            } catch (error) {
+                                throw new Error('身分驗證失敗，請重新登入!');
+                            }
+                            throw new Error(`清空失敗，${data["message"]}`);
+                        });
                 }
             })
             .then(

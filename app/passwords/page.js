@@ -314,9 +314,9 @@ function EditToolbar(props) {
                 }
             })
             .then(
-                () => {
+                (response) => {
                     setAlert(true);
-                    setAlertMessage("新增成功");
+                    setAlertMessage(response["message"]);
                     handleAddPasswordClose();
                 }
             ).catch(
@@ -885,9 +885,9 @@ export default function Passwords() {
                 }
             })
             .then(
-                () => {
+                (response) => {
                     setAlert(true);
-                    setAlertMessage("刪除成功");
+                    setAlertMessage(response["message"]);
                     setDeleteConfirmOpen(false);
                 }
             ).catch(
@@ -943,9 +943,9 @@ export default function Passwords() {
                 }
             })
             .then(
-                () => {
+                (response) => {
                     setAlert(true);
-                    setAlertMessage("更新成功");
+                    setAlertMessage(response["message"]);
                     handleModalClose("edit");
                 }
             ).catch(

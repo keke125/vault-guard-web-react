@@ -188,13 +188,16 @@ export default function Account() {
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`變更失敗，${response["message"]}`) });
                 } else if (response.status === 401) {
-                    return response.json().then((response) => {
-                        if (response["message"]) {
-                            throw new Error(`變更失敗，${response["message"]}`);
-                        } else {
-                            throw new Error('身分驗證失敗，請重新登入!');
-                        }
-                    })
+                    return response.text()
+                        .then((response) => {
+                            let data;
+                            try {
+                                data = JSON.parse(response);
+                            } catch (error) {
+                                throw new Error('身分驗證失敗，請重新登入!');
+                            }
+                            throw new Error(`變更失敗，${data["message"]}`);
+                        });
                 }
                 else {
                     throw new Error("變更失敗!");
@@ -251,13 +254,16 @@ export default function Account() {
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`變更失敗，${response["message"]}`) });
                 } else if (response.status === 401) {
-                    return response.json().then((response) => {
-                        if (response["message"]) {
-                            throw new Error(`變更失敗，${response["message"]}`);
-                        } else {
-                            throw new Error('身分驗證失敗，請重新登入!');
-                        }
-                    })
+                    return response.text()
+                        .then((response) => {
+                            let data;
+                            try {
+                                data = JSON.parse(response);
+                            } catch (error) {
+                                throw new Error('身分驗證失敗，請重新登入!');
+                            }
+                            throw new Error(`變更失敗，${data["message"]}`);
+                        });
                 }
                 else {
                     throw new Error("變更失敗!");
@@ -372,13 +378,16 @@ export default function Account() {
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`修改失敗，${response["message"]}`) });
                 } else if (response.status === 401) {
-                    return response.json().then((response) => {
-                        if (response["message"]) {
-                            throw new Error(`修改失敗，${response["message"]}`);
-                        } else {
-                            throw new Error('身分驗證失敗，請重新登入!');
-                        }
-                    })
+                    return response.text()
+                        .then((response) => {
+                            let data;
+                            try {
+                                data = JSON.parse(response);
+                            } catch (error) {
+                                throw new Error('身分驗證失敗，請重新登入!');
+                            }
+                            throw new Error(`修改失敗，${data["message"]}`);
+                        });
                 }
                 else {
                     throw new Error("修改失敗!");
@@ -528,13 +537,16 @@ export default function Account() {
                 } else if (response.status === 400) {
                     return response.json().then((response) => { throw new Error(`刪除失敗，${response["message"]}`) });
                 } else if (response.status === 401) {
-                    return response.json().then((response) => {
-                        if (response["message"]) {
-                            throw new Error(`刪除失敗，${response["message"]}`);
-                        } else {
-                            throw new Error('身分驗證失敗，請重新登入!');
-                        }
-                    });
+                    return response.text()
+                        .then((response) => {
+                            let data;
+                            try {
+                                data = JSON.parse(response);
+                            } catch (error) {
+                                throw new Error('身分驗證失敗，請重新登入!');
+                            }
+                            throw new Error(`刪除失敗，${data["message"]}`);
+                        });
                 }
             })
             .then(

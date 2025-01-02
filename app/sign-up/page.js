@@ -155,10 +155,10 @@ export default function SignUp() {
                     throw new Error();
                 }
             }).then(
-                () => {
+                (response) => {
                     signUpStatus = true;
                     setAlert(true);
-                    setAlertMessage("註冊成功，將跳轉至啟用帳號頁面");
+                    setAlertMessage(response["message"]);
                 }
             ).catch(
                 (error) => {
