@@ -658,7 +658,6 @@ export default function Account() {
                                             type={showPassword ? 'text' : 'password'}
                                             id="password"
                                             autoComplete="current-password"
-                                            autoFocus
                                             required
                                             fullWidth
                                             variant="outlined"
@@ -741,7 +740,6 @@ export default function Account() {
                                             type={showNewPassword ? 'text' : 'password'}
                                             id="newPassword"
                                             autoComplete="new-password"
-                                            autoFocus
                                             required
                                             fullWidth
                                             variant="outlined"
@@ -771,7 +769,6 @@ export default function Account() {
                                             type={showRepeatedNewPassword ? 'text' : 'password'}
                                             id="repeatedNewPassword"
                                             autoComplete="new-password"
-                                            autoFocus
                                             required
                                             fullWidth
                                             variant="outlined"
@@ -853,7 +850,6 @@ export default function Account() {
                                             type="text"
                                             name="verificationCode"
                                             placeholder="請輸入驗證碼"
-                                            autoFocus
                                             required
                                             fullWidth
                                             variant="outlined"
@@ -870,7 +866,6 @@ export default function Account() {
                                             type={showPassword ? 'text' : 'password'}
                                             id="password"
                                             autoComplete="current-password"
-                                            autoFocus
                                             required
                                             fullWidth
                                             variant="outlined"

@@ -148,7 +148,6 @@ export default function ActivateAccountByEmail() {
                             value={email}
                             placeholder="請輸入電子信箱"
                             autoComplete="email"
-                            autoFocus
                             required
                             fullWidth
                             variant="outlined"

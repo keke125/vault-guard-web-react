@@ -324,6 +324,7 @@ export default function Vault() {
                                             id="import-type-select"
                                             value={importType}
                                             label="importType"
+                                            autoFocus
                                             onChange={handleImportTypeChange}
                                             sx={{ marginTop: 1, marginBottom: 2 }}
                                         >
@@ -374,6 +375,7 @@ export default function Vault() {
                                         onChange={(event) => {
                                             setMainPassword(event.target.value);
                                         }}
+                                        autoFocus
                                         autoComplete="current-password"
                                         fullWidth
                                         variant="outlined"
@@ -419,6 +421,7 @@ export default function Vault() {
                                         onChange={(event) => {
                                             setMainPassword(event.target.value);
                                         }}
+                                        autoFocus
                                         autoComplete="current-password"
                                         fullWidth
                                         variant="outlined"

@@ -186,7 +186,6 @@ export default function LogIn() {
               type={showPassword ? 'text' : 'password'}
               id="password"
               autoComplete="current-password"
-              autoFocus
               required
               fullWidth
               variant="outlined"

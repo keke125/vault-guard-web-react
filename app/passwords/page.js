@@ -1183,7 +1183,7 @@ export default function Passwords() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleDeleteConfirmClose}>取消</Button>
-                    <Button onClick={() => handleDeleteClick(id)} autoFocus>
+                    <Button onClick={() => handleDeleteClick(id)}>
                         確定
                     </Button>
                 </DialogActions>

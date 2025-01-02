@@ -235,7 +235,6 @@ export default function SignUp() {
                             name="email"
                             placeholder="請輸入電子信箱，註冊後系統將寄送確認信"
                             autoComplete="email"
-                            autoFocus
                             required
                             fullWidth
                             variant="outlined"
@@ -252,7 +251,6 @@ export default function SignUp() {
                             type={showPassword ? 'text' : 'password'}
                             id="password"
                             autoComplete="new-password"
-                            autoFocus
                             required
                             fullWidth
                             variant="outlined"
@@ -282,7 +280,6 @@ export default function SignUp() {
                             type={showRepeatedPassword ? 'text' : 'password'}
                             id="repeatedPassword"
                             autoComplete="new-password"
-                            autoFocus
                             required
                             fullWidth
                             variant="outlined"

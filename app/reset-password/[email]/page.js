@@ -229,7 +229,6 @@ export default function ResetPasswordByEmail() {
                             value={email}
                             placeholder="請輸入電子信箱"
                             autoComplete="email"
-                            autoFocus
                             required
                             fullWidth
                             variant="outlined"
@@ -249,9 +248,9 @@ export default function ResetPasswordByEmail() {
                             name="verificationCode"
                             value={verificationCode}
                             placeholder="請輸入確認信裡的驗證碼，或直接點擊信中連結"
-                            autoFocus
                             required
                             fullWidth
+                            autoFocus
                             variant="outlined"
                             color={verificationCodeError ? 'error' : 'primary'}
                             onChange={(event) => {
@@ -269,7 +268,6 @@ export default function ResetPasswordByEmail() {
                             type={showNewPassword ? 'text' : 'password'}
                             id="newPassword"
                             autoComplete="new-password"
-                            autoFocus
                             required
                             fullWidth
                             variant="outlined"
@@ -299,7 +297,6 @@ export default function ResetPasswordByEmail() {
                             type={showRepeatedNewPassword ? 'text' : 'password'}
                             id="repeatedNewPassword"
                             autoComplete="new-password"
-                            autoFocus
                             required
                             fullWidth
                             variant="outlined"
