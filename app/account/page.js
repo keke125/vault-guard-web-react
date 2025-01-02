@@ -18,9 +18,11 @@ export default function Account() {
     const [selectedTab, setSelectedTab] = React.useState("1");
     const [passwordError, setPasswordError] = React.useState(false);
     const [newPasswordError, setNewPasswordError] = React.useState(false);
+    const [newUsernameError, setNewUsernameError] = React.useState(false);
     const [repeatedNewPasswordError, setRepeatedNewPasswordError] = React.useState(false);
     const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
     const [newPasswordErrorMessage, setNewPasswordErrorMessage] = React.useState('');
+    const [newUsernameErrorMessage, setNewUsernameErrorMessage] = React.useState('');
     const [repeatedNewPasswordErrorMessage, setRepeatedNewPasswordErrorMessage] = React.useState('');
     const [showPassword, setShowPassword] = React.useState(false);
     const [showNewPassword, setShowNewPassword] = React.useState(false);
@@ -48,6 +50,7 @@ export default function Account() {
     const handleSelectedTabChange = (newValue) => {
         setSelectedTab(newValue);
         clearChangePassword();
+        clearChangeUsername();
         clearChangeEmail();
     };
 
@@ -64,6 +67,12 @@ export default function Account() {
         setRepeatedNewPasswordErrorMessage('');
         setShowNewPassword(false);
         setShowRepeatedNewPassword(false);
+        clearPassword();
+    }
+
+    const clearChangeUsername = () => {
+        setNewUsernameError(false);
+        setNewUsernameErrorMessage('');
         clearPassword();
     }
 
@@ -117,6 +126,33 @@ export default function Account() {
         } else if (isValid) {
             setRepeatedNewPasswordError(false);
             setRepeatedNewPasswordErrorMessage('');
+        }
+
+        return isValid;
+    };
+
+    const validateChangeUsernameInput = () => {
+        const newUsername = document.getElementById('newUsername');
+        const password = document.getElementById('password');
+
+        let isValid = true;
+
+        if (!newUsername.value) {
+            setNewUsernameError(true);
+            setNewUsernameErrorMessage('請輸入新的帳號!');
+            isValid = false;
+        } else {
+            setNewUsernameError(false);
+            setNewUsernameErrorMessage('');
+        }
+
+        if (!password.value || !((8 <= password.value.length) && (password.value.length <= 128))) {
+            setPasswordError(true);
+            setPasswordErrorMessage('主密碼長度必須在8-128字元之間!');
+            isValid = false;
+        } else {
+            setPasswordError(false);
+            setPasswordErrorMessage('');
         }
 
         return isValid;
@@ -185,6 +221,69 @@ export default function Account() {
             );
     }
 
+    const submitChangeUsernameData = async (newUsername, password) => {
+        const token = Cookies.get('token');
+        if (token === undefined || token === '') {
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
+            redirect("/log-in");
+        }
+        const url = new URL('/api/v1/account/user', window.location.origin);
+        const params = new URLSearchParams({ type: "username" });
+        url.search = params;
+        await fetch(url, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                newUsername: newUsername,
+                oldPassword: password
+            }),
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`變更失敗，${response["message"]}`) });
+                } else if (response.status === 401) {
+                    return response.json().then((response) => {
+                        if (response["message"]) {
+                            throw new Error(`變更失敗，${response["message"]}`);
+                        } else {
+                            throw new Error('身分驗證失敗，請重新登入!');
+                        }
+                    })
+                }
+                else {
+                    throw new Error("變更失敗!");
+                }
+            }).then(
+                (response) => {
+                    setAlert(true);
+                    setAlertMessage(response["message"]);
+                    document.getElementById("newUsername").value = '';
+                    document.getElementById("password").value = '';
+                    clearChangeUsername();
+                    location.reload();
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
+                        redirect("/log-in", "push");
+                    } else if (error.message) {
+                        setAlert(true);
+                        setAlertMessage(error.message);
+                    }
+                }
+            );
+    }
+
     const handleChangePasswordSubmit = (event) => {
         if (passwordError || newPasswordError || repeatedNewPasswordError) {
             event.preventDefault();
@@ -192,6 +291,16 @@ export default function Account() {
         }
         const data = new FormData(event.currentTarget);
         submitChangePasswordData(data.get('password'), data.get('newPassword'));
+        event.preventDefault();
+    };
+
+    const handleChangeUsernameSubmit = (event) => {
+        if (newUsernameError || passwordError) {
+            event.preventDefault();
+            return;
+        }
+        const data = new FormData(event.currentTarget);
+        submitChangeUsernameData(data.get('newUsername'), data.get('password'));
         event.preventDefault();
     };
 
@@ -408,11 +517,82 @@ export default function Account() {
                         <TabContext value={selectedTab}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList onChange={(_, newValue) => handleSelectedTabChange(newValue)} aria-label="vault setting tabs">
-                                    <Tab label="變更主密碼" value="1" />
-                                    <Tab label="修改電子信箱" value="2" />
+                                    <Tab label="變更帳號" value="1" />
+                                    <Tab label="變更主密碼" value="2" />
+                                    <Tab label="修改電子信箱" value="3" />
                                 </TabList>
                             </Box>
                             <TabPanel value="1">
+                                <Box
+                                    component="form"
+                                    onSubmit={handleChangeUsernameSubmit}
+                                    noValidate
+                                    method="post"
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        width: '100%',
+                                        gap: 2,
+                                    }}
+                                >
+                                    <FormControl>
+                                        <FormLabel htmlFor="newUsername">新的帳號</FormLabel>
+                                        <TextField
+                                            error={newUsernameError}
+                                            helperText={newUsernameErrorMessage}
+                                            name="newUsername"
+                                            placeholder="請輸入新的帳號"
+                                            type="text"
+                                            id="newUsername"
+                                            autoComplete="username"
+                                            autoFocus
+                                            required
+                                            fullWidth
+                                            variant="outlined"
+                                            color={newUsernameError ? 'error' : 'primary'}
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel htmlFor="password">主密碼</FormLabel>
+                                        <TextField
+                                            error={passwordError}
+                                            helperText={passwordErrorMessage}
+                                            name="password"
+                                            placeholder="請輸入主密碼"
+                                            type={showPassword ? 'text' : 'password'}
+                                            id="password"
+                                            autoComplete="current-password"
+                                            autoFocus
+                                            required
+                                            fullWidth
+                                            variant="outlined"
+                                            color={passwordError ? 'error' : 'primary'}
+                                            slotProps={{
+                                                input: {
+                                                    endAdornment: <InputAdornment position="end">
+                                                        <IconButton
+                                                            aria-label="toggle password visibility"
+                                                            onClick={handleClickShowPassword}
+                                                            edge="end"
+                                                        >
+                                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                        </IconButton>
+                                                    </InputAdornment>,
+                                                },
+                                            }}
+                                        />
+                                    </FormControl>
+                                    <Button
+                                        type="submit"
+                                        fullWidth
+                                        variant="contained"
+                                        onClick={validateChangeUsernameInput}
+                                    >
+                                        變更
+                                    </Button>
+                                </Box>
+                            </TabPanel>
+                            <TabPanel value="2">
                                 <Box
                                     component="form"
                                     onSubmit={handleChangePasswordSubmit}
@@ -525,7 +705,7 @@ export default function Account() {
                                     </Button>
                                 </Box>
                             </TabPanel>
-                            <TabPanel value="2">
+                            <TabPanel value="3">
                                 <Box
                                     component="form"
                                     onSubmit={handleChangeEmailSubmit}
