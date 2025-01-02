@@ -3,6 +3,7 @@
 import { Stack, Box, Tab, Typography, FormControl, FormLabel, IconButton } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { TextField, Button, InputAdornment } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Alert, Snackbar } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
@@ -34,6 +35,7 @@ export default function Account() {
     const [alert, setAlert] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState('');
     const [newEmailReadonly, setNewEmailReadonly] = React.useState(false);
+    const [deleteAccountConfirmOpen, setDeleteAccountConfirmOpen] = React.useState(false);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
     const handleClickShowNewPassword = () => setShowNewPassword((show) => !show);
@@ -474,6 +476,99 @@ export default function Account() {
             );
     }
 
+    function handleDeleteAccountConfirmClose() {
+        setDeleteAccountConfirmOpen(false);
+        document.getElementById("password").value = '';
+        clearPassword();
+    };
+
+    const validateDeleteAccountInput = () => {
+        const password = document.getElementById('password');
+
+        let isValid = true;
+
+        if (!password.value || !((8 <= password.value.length) && (password.value.length <= 128))) {
+            setPasswordError(true);
+            setPasswordErrorMessage('主密碼長度必須在8-128字元之間!');
+            isValid = false;
+        } else {
+            setPasswordError(false);
+            setPasswordErrorMessage('');
+        }
+
+        if (isValid) {
+            setDeleteAccountConfirmOpen(true);
+        }
+
+        return isValid;
+    };
+
+    const submitDeleteAccountData = async (oldPassword) => {
+        const token = Cookies.get('token');
+        let isSuccess = false;
+        if (token === undefined || token === '') {
+            setAlert(true);
+            setAlertMessage("身分驗證失敗，請重新登入!");
+            Cookies.remove('token');
+            redirect("/log-in", "push");
+        }
+        await fetch('/api/v1/account/user', {
+            method: 'DELETE',
+            body: JSON.stringify({
+                oldPassword: oldPassword
+            }),
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 400) {
+                    return response.json().then((response) => { throw new Error(`刪除失敗，${response["message"]}`) });
+                } else if (response.status === 401) {
+                    return response.json().then((response) => {
+                        if (response["message"]) {
+                            throw new Error(`刪除失敗，${response["message"]}`);
+                        } else {
+                            throw new Error('身分驗證失敗，請重新登入!');
+                        }
+                    });
+                }
+            })
+            .then(
+                (response) => {
+                    setAlert(true);
+                    setAlertMessage(response["message"]);
+                    isSuccess = true;
+                }
+            ).catch(
+                (error) => {
+                    if (error.message === 'Failed to fetch' || error.message === '身分驗證失敗，請重新登入!') {
+                        setAlert(true);
+                        setAlertMessage("身分驗證失敗，請重新登入!");
+                        Cookies.remove('token');
+                        redirect("/log-in", "push");
+                    } else {
+                        setAlert(true);
+                        setAlertMessage(error.message);
+                    }
+                }
+            );
+        if (isSuccess) {
+            Cookies.remove('token');
+            redirect("/log-in", "push");
+        }
+    };
+
+    const handleDeleteAccountClick = (event) => {
+        const password = document.getElementById('password').value;
+        handleDeleteAccountConfirmClose();
+        submitDeleteAccountData(password);
+        event.preventDefault();
+    };
+
     return (
 
         <Box sx={{ display: 'flex' }}>
@@ -520,6 +615,7 @@ export default function Account() {
                                     <Tab label="變更帳號" value="1" />
                                     <Tab label="變更主密碼" value="2" />
                                     <Tab label="修改電子信箱" value="3" />
+                                    <Tab label="刪除帳號" value="4" />
                                 </TabList>
                             </Box>
                             <TabPanel value="1">
@@ -814,6 +910,77 @@ export default function Account() {
                                     >
                                         取消
                                     </Button>
+                                </Box>
+                            </TabPanel>
+                            <TabPanel value="4">
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        width: '100%',
+                                        gap: 2,
+                                    }}
+                                >
+                                    <FormControl>
+                                        <FormLabel htmlFor="password">主密碼</FormLabel>
+                                        <TextField
+                                            error={passwordError}
+                                            helperText={passwordErrorMessage}
+                                            name="password"
+                                            placeholder="請輸入主密碼"
+                                            type={showPassword ? 'text' : 'password'}
+                                            id="password"
+                                            autoComplete="current-password"
+                                            autoFocus
+                                            required
+                                            fullWidth
+                                            variant="outlined"
+                                            color={passwordError ? 'error' : 'primary'}
+                                            slotProps={{
+                                                input: {
+                                                    endAdornment: <InputAdornment position="end">
+                                                        <IconButton
+                                                            aria-label="toggle password visibility"
+                                                            onClick={handleClickShowPassword}
+                                                            edge="end"
+                                                        >
+                                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                        </IconButton>
+                                                    </InputAdornment>,
+                                                },
+                                            }}
+                                        />
+                                    </FormControl>
+                                    <Button
+                                        fullWidth
+                                        variant="contained"
+                                        onClick={validateDeleteAccountInput}
+                                    >
+                                        刪除
+                                    </Button>
+                                    <Dialog
+                                        open={deleteAccountConfirmOpen}
+                                        onClose={handleDeleteAccountConfirmClose}
+                                        aria-labelledby="delete-account-alert-dialog-title"
+                                        aria-describedby="delete-account-alert-dialog-description"
+                                    >
+                                        <DialogTitle id="delete-account-alert-dialog-title">
+                                            是否要刪除帳號?
+                                        </DialogTitle>
+                                        <DialogContent>
+                                            <DialogContentText id="delete-account-alert-dialog-description">
+                                                您的所有資料將被刪除，刪除後將無法還原。
+                                            </DialogContentText>
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button onClick={handleDeleteAccountConfirmClose}>取消</Button>
+                                            <Button
+                                                onClick={handleDeleteAccountClick}
+                                            >
+                                                確定
+                                            </Button>
+                                        </DialogActions>
+                                    </Dialog>
                                 </Box>
                             </TabPanel>
                         </TabContext>
